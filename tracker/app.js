@@ -758,19 +758,39 @@ function renderPlanView() {
 // ════════════════════════════════════════════════════════
 function renderNotesView() {
   const list = $('notes-week-list'); list.innerHTML = '';
-  if (!hasPlanContent()) {
-    list.innerHTML = emptyNotice('Nenhum plano carregado',
-      'Importe um .md programático para criar notas por semana.');
+
+  // Recolhe entradas de notas: semanas (apenas se tiver nota) e desafios (se tiver tentativas)
+  const entries = [];
+  if (hasPlanContent()) {
+    ACTIVE_PLAN.allWeeks.forEach(week => {
+      const noteText = state.notes[week.id] && state.notes[week.id].trim();
+      if (noteText) entries.push({ type: 'week', id: week.id, title: `Semana ${week.id} — ${week.title}`, subtitle: week.days });
+    });
+  }
+  if (hasChallengesContent()) {
+    (CHALLENGES_DATA.allChallenges || []).forEach(c => {
+      const cs = state.challenges[c.id] || { attempts: [] };
+      if (cs.attempts && cs.attempts.length > 0) {
+        entries.push({ type: 'challenge', id: c.id, title: `Desafio ${String(c.num).padStart(2,'0')} — ${c.title}`, subtitle: `${c.trains?.join(', ') || ''}` });
+      }
+    });
+  }
+
+  if (!entries.length) {
+    list.innerHTML = emptyNotice('Nenhuma nota registrada', 'Escreva notas nas views de Semana ou Desafio e elas aparecerão aqui para edição.');
     return;
   }
-  ACTIVE_PLAN.allWeeks.forEach(week => {
-    const hasNote = !!(state.notes[week.id] && state.notes[week.id].trim());
-    const item = el('div', { className: 'note-week-item', 'data-week': week.id });
-    item.appendChild(el('div', { className: 'nwi-week' }, 'Semana ' + week.id));
-    const tr = el('div', { className: 'nwi-title' }, week.title);
-    if (hasNote) tr.appendChild(el('span', { className: 'nwi-has-note' }));
+
+  entries.forEach(en => {
+    const item = el('div', { className: 'note-week-item', 'data-type': en.type, 'data-id': en.id });
+    item.appendChild(el('div', { className: 'nwi-week' }, en.type === 'week' ? ('Semana ' + en.id) : ('Desafio ' + ('0' + (CHALLENGES_DATA.allChallenges.find(c=>c.id===en.id)?.num||en.id)).slice(-2))));
+    const tr = el('div', { className: 'nwi-title' }, en.title.replace(/^Semana \d+ — /, '').replace(/^Desafio \d+ — /, ''));
+    tr.appendChild(el('div', { className: 'nwi-sub' }, en.subtitle));
     item.appendChild(tr);
-    item.addEventListener('click', () => selectNoteWeek(week.id));
+    item.addEventListener('click', () => {
+      if (en.type === 'week') selectNoteWeek(en.id);
+      else selectNoteChallenge(en.id);
+    });
     list.appendChild(item);
   });
 }
@@ -881,6 +901,7 @@ function renderChallengesView() {
 // ════════════════════════════════════════════════════════
 let activeWeekId = null;
 let activeNoteWeekId = null;
+let activeNoteChallengeId = null;
 
 function openWeekModal(weekId) {
   activeWeekId = weekId;
@@ -1177,9 +1198,10 @@ function recordActivity() {
 // ════════════════════════════════════════════════════════
 function selectNoteWeek(weekId) {
   activeNoteWeekId = weekId;
+  activeNoteChallengeId = null;
   const week = ACTIVE_PLAN.allWeeks.find(w => w.id === weekId);
   document.querySelectorAll('.note-week-item').forEach(e => {
-    e.classList.toggle('active', parseInt(e.dataset.week) === weekId);
+    e.classList.toggle('active', (e.dataset.type === 'week' && String(e.dataset.id) === String(weekId)));
   });
   $('notes-editor-header').innerHTML = `<strong>Semana ${weekId} — ${week.title}</strong> <span style="color:var(--text-muted);font-weight:400;font-size:12px;margin-left:8px">${week.days}</span>`;
   $('notes-editor').value = state.notes[weekId] || '';
@@ -1188,11 +1210,38 @@ function selectNoteWeek(weekId) {
   $('btn-clear-note').disabled = false;
 }
 
+function selectNoteChallenge(chId) {
+  activeNoteChallengeId = chId;
+  activeNoteWeekId = null;
+  const challenge = CHALLENGES_DATA.allChallenges.find(c => c.id === chId);
+  document.querySelectorAll('.note-week-item').forEach(e => {
+    e.classList.toggle('active', (e.dataset.type === 'challenge' && e.dataset.id === chId));
+  });
+  $('notes-editor-header').innerHTML = `<strong>Desafio ${String(challenge.num).padStart(2,'0')} — ${challenge.title}</strong>`;
+  const cs = state.challenges[chId] || { attempts: [] };
+  const last = cs.attempts && cs.attempts.length ? cs.attempts[cs.attempts.length - 1].text : '';
+  $('notes-editor').value = last || '';
+  $('notes-editor').disabled = false;
+  $('btn-save-note').disabled = false;
+  $('btn-clear-note').disabled = false;
+}
+
 function saveNote() {
-  if (!activeNoteWeekId) return;
-  state.notes[activeNoteWeekId] = $('notes-editor').value;
-  saveState(); renderNotesView(); selectNoteWeek(activeNoteWeekId);
-  showToast('Nota salva! 💾');
+  const txt = ($('notes-editor').value || '').trim();
+  if (activeNoteWeekId) {
+    state.notes[activeNoteWeekId] = txt;
+    saveState(); renderNotesView(); selectNoteWeek(activeNoteWeekId);
+    showToast('Nota salva! 💾');
+    return;
+  }
+  if (activeNoteChallengeId) {
+    if (!txt) { showToast('Escreva algo antes de salvar! ✏️'); return; }
+    if (!state.challenges[activeNoteChallengeId]) state.challenges[activeNoteChallengeId] = { done: false, attempts: [] };
+    state.challenges[activeNoteChallengeId].attempts.push({ date: new Date().toISOString(), text: txt });
+    recordActivity(); saveState(); renderNotesView(); selectNoteChallenge(activeNoteChallengeId);
+    showToast('Nota/Tentativa do desafio salva! 💾');
+    return;
+  }
 }
 
 // ════════════════════════════════════════════════════════
@@ -1591,9 +1640,18 @@ window.appInit = new Promise(resolve => {
   // Notes
   $('btn-save-note').addEventListener('click', saveNote);
   $('btn-clear-note').addEventListener('click', () => {
-    if (!activeNoteWeekId) return;
-    $('notes-editor').value = ''; state.notes[activeNoteWeekId] = '';
-    saveState(); renderNotesView(); showToast('Nota apagada 🗑️');
+    if (activeNoteWeekId) {
+      $('notes-editor').value = ''; state.notes[activeNoteWeekId] = '';
+      saveState(); renderNotesView(); selectNoteWeek(activeNoteWeekId);
+      showToast('Nota apagada 🗑️');
+      return;
+    }
+    if (activeNoteChallengeId) {
+      state.challenges[activeNoteChallengeId] = { done: false, attempts: [] };
+      saveState(); renderNotesView(); selectNoteChallenge(activeNoteChallengeId);
+      showToast('Notas/tentativas do desafio apagadas 🗑️');
+      return;
+    }
   });
 
   // Export
