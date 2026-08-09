@@ -1,13 +1,80 @@
 /* ═══════════════════════════════════════════════════════════
    90 DIAS NA GRINGA — TRACKER STYLESHEET
-   Design: Dark mode premium, glassmorphism, micro-animations
+   Tema padrão: Catppuccin Mocha (https://catppuccin.com/)
+   Alternativa: Dark Premium (data-theme="premium")
 ═══════════════════════════════════════════════════════════ */
 
-/* ─── Design Tokens ─── */
+/* ─── Design Tokens — Catppuccin Mocha (padrão) ─── */
 :root {
+  --bg-base:        #1e1e2e;                 /* base     */
+  --bg-surface:     #181825;                 /* mantle   */
+  --bg-card:        #313244;                 /* surface0 */
+  --bg-elev:        #45475a;                 /* surface1 */
+  --bg-glass:       rgba(49, 50, 68, 0.85);
+  --bg-hover:       rgba(205,214,244,0.05);
+
+  --border:         rgba(205,214,244,0.08);
+  --border-accent:  rgba(137,180,250,0.35);  /* blue */
+
+  --indigo:         #89b4fa;                 /* blue      */
+  --indigo-light:   #b4befe;                 /* lavender  */
+  --indigo-dim:     rgba(137,180,250,0.15);
+
+  --emerald:        #a6e3a1;                 /* green     */
+  --emerald-dim:    rgba(166,227,161,0.15);
+
+  --amber:          #f9e2af;                 /* yellow    */
+  --amber-dim:      rgba(249,226,175,0.15);
+
+  --rose:           #f38ba8;                 /* red       */
+  --rose-dim:       rgba(243,139,168,0.15);
+
+  --violet:         #cba6f7;                 /* mauve     */
+  --violet-light:   #cba6f7;
+  --violet-dim:     rgba(203,166,247,0.15);
+
+  --cyan:           #94e2d5;                 /* teal      */
+
+  --text-primary:   #cdd6f4;                 /* text      */
+  --text-secondary: #bac2de;                 /* subtext1  */
+  --text-muted:     #7f849c;                 /* overlay1  */
+  --danger:         #f38ba8;
+
+  /* Glows / sombras derivados (trocados por tema) */
+  --indigo-glow:     rgba(137,180,250,0.15);
+  --indigo-glow-md:  rgba(137,180,250,0.20);
+  --indigo-glow-lg:  rgba(137,180,250,0.40);
+  --indigo-glow-xl:  rgba(137,180,250,0.60);
+  --indigo-bg:       rgba(137,180,250,0.08);
+  --indigo-bg-card:  rgba(137,180,250,0.12);
+  --violet-bg:       rgba(203,166,247,0.06);
+  --amber-border:    rgba(249,226,175,0.30);
+  --amber-border-sm: rgba(249,226,175,0.25);
+  --amber-border-xs: rgba(249,226,175,0.20);
+  --amber-glow:      rgba(249,226,175,0.15);
+  --amber-glow-md:   rgba(249,226,175,0.40);
+  --amber-bg:        rgba(249,226,175,0.06);
+  --rose-bg:         rgba(243,139,168,0.04);
+  --emerald-border:  rgba(166,227,161,0.20);
+  --violet-border:   rgba(203,166,247,0.20);
+
+  --sidebar-w:      240px;
+  --radius-sm:      8px;
+  --radius-md:      12px;
+  --radius-lg:      20px;
+
+  --shadow-glow:    0 0 30px rgba(137,180,250,0.12);
+  --shadow-card:    0 4px 24px rgba(0,0,0,0.35);
+
+  --transition:     0.2s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* ─── Design Tokens — Dark Premium (tema alternativo) ─── */
+[data-theme="premium"] {
   --bg-base:        #0a0c14;
   --bg-surface:     #111420;
   --bg-card:        #161a2a;
+  --bg-elev:        #1b2034;
   --bg-glass:       rgba(22, 26, 42, 0.85);
   --bg-hover:       rgba(255,255,255,0.04);
 
@@ -28,6 +95,7 @@
   --rose-dim:       rgba(244,63,94,0.15);
 
   --violet:         #8b5cf6;
+  --violet-light:   #a78bfa;
   --violet-dim:     rgba(139,92,246,0.15);
 
   --cyan:           #06b6d4;
@@ -35,16 +103,26 @@
   --text-primary:   #f1f5f9;
   --text-secondary: #94a3b8;
   --text-muted:     #475569;
+  --danger:         #f87171;
 
-  --sidebar-w:      240px;
-  --radius-sm:      8px;
-  --radius-md:      12px;
-  --radius-lg:      20px;
+  --indigo-glow:     rgba(99,102,241,0.15);
+  --indigo-glow-md:  rgba(99,102,241,0.20);
+  --indigo-glow-lg:  rgba(99,102,241,0.40);
+  --indigo-glow-xl:  rgba(99,102,241,0.60);
+  --indigo-bg:       rgba(99,102,241,0.08);
+  --indigo-bg-card:  rgba(99,102,241,0.12);
+  --violet-bg:       rgba(139,92,246,0.06);
+  --amber-border:    rgba(245,158,11,0.30);
+  --amber-border-sm: rgba(245,158,11,0.25);
+  --amber-border-xs: rgba(245,158,11,0.20);
+  --amber-glow:      rgba(245,158,11,0.15);
+  --amber-glow-md:   rgba(245,158,11,0.40);
+  --amber-bg:        rgba(245,158,11,0.06);
+  --rose-bg:         rgba(244,63,94,0.04);
+  --emerald-border:  rgba(16,185,129,0.20);
+  --violet-border:   rgba(139,92,246,0.20);
 
   --shadow-glow:    0 0 30px rgba(99,102,241,0.12);
-  --shadow-card:    0 4px 24px rgba(0,0,0,0.35);
-
-  --transition:     0.2s cubic-bezier(0.4,0,0.2,1);
 }
 
 /* ─── Reset & Base ─── */
@@ -60,8 +138,8 @@ body {
   display: flex;
   overflow: hidden;
   background-image:
-    radial-gradient(ellipse 80% 60% at 20% 0%, rgba(99,102,241,0.08) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 40% at 80% 100%, rgba(139,92,246,0.06) 0%, transparent 60%);
+    radial-gradient(ellipse 80% 60% at 20% 0%, var(--indigo-bg) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 100%, var(--violet-bg) 0%, transparent 60%);
 }
 
 /* ─── Scrollbar ─── */
@@ -96,7 +174,7 @@ body {
   border-bottom: 1px solid var(--border);
   margin-bottom: 8px;
 }
-.logo-icon { font-size: 28px; filter: drop-shadow(0 0 12px rgba(99,102,241,0.6)); }
+.logo-icon { font-size: 28px; filter: drop-shadow(0 0 12px var(--indigo-glow-xl)); }
 .logo-text { display: flex; flex-direction: column; }
 .logo-title { font-weight: 800; font-size: 15px; color: var(--text-primary); letter-spacing: -0.3px; }
 .logo-sub   { font-size: 11px; color: var(--text-muted); font-weight: 400; }
@@ -327,7 +405,7 @@ body {
   position: absolute;
   top: -40px; right: -40px;
   width: 180px; height: 180px;
-  background: radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%);
+  background: radial-gradient(circle, var(--indigo-bg-card) 0%, transparent 70%);
   pointer-events: none;
 }
 .cw-loading {
@@ -410,7 +488,7 @@ body {
   font-size: 10px;
   font-weight: 600;
   background: var(--amber-dim);
-  border: 1px solid rgba(245,158,11,0.3);
+  border: 1px solid var(--amber-border);
   color: var(--amber);
   border-radius: 99px;
   padding: 2px 8px;
@@ -440,12 +518,12 @@ body {
 .week-tile:hover {
   border-color: var(--indigo);
   transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(99,102,241,0.15);
+  box-shadow: 0 4px 16px var(--indigo-glow);
 }
 .week-tile.current {
   border-color: var(--indigo);
   background: var(--indigo-dim);
-  box-shadow: 0 0 20px rgba(99,102,241,0.2);
+  box-shadow: 0 0 20px var(--indigo-glow-md);
 }
 .week-tile.done { border-color: var(--emerald); background: var(--emerald-dim); }
 .week-tile.locked { opacity: 0.4; cursor: default; }
@@ -564,7 +642,7 @@ body {
   font-size: 11px;
   font-weight: 600;
   background: var(--amber-dim);
-  border: 1px solid rgba(245,158,11,0.25);
+  border: 1px solid var(--amber-border-sm);
   color: var(--amber);
   border-radius: 99px;
   padding: 3px 10px;
@@ -728,7 +806,7 @@ body {
 }
 .btn-primary:hover {
   background: var(--indigo-light);
-  box-shadow: 0 0 16px rgba(99,102,241,0.4);
+  box-shadow: 0 0 16px var(--indigo-glow-lg);
 }
 .btn-secondary {
   background: transparent;
@@ -817,7 +895,7 @@ body {
   padding: 10px 14px;
   transition: border-color var(--transition);
 }
-.form-input:focus { outline: none; border-color: var(--indigo); box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
+.form-input:focus { outline: none; border-color: var(--indigo); box-shadow: 0 0 0 3px var(--indigo-glow); }
 .form-hint { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
 
 /* ─── Modal Week Tasks ─── */
@@ -862,7 +940,7 @@ body {
   font-weight: 700;
   background: var(--amber-dim);
   color: var(--amber);
-  border: 1px solid rgba(245,158,11,0.3);
+  border: 1px solid var(--amber-border);
   border-radius: 99px;
   padding: 1px 7px;
   display: none;
@@ -875,7 +953,7 @@ body {
   align-items: center;
   gap: 6px;
   background: linear-gradient(135deg, var(--amber-dim), var(--rose-dim));
-  border: 1px solid rgba(245,158,11,0.3);
+  border: 1px solid var(--amber-border);
   border-radius: var(--radius-sm);
   padding: 8px 16px;
   font-size: 16px;
@@ -900,7 +978,7 @@ body {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, rgba(245,158,11,0.06) 0%, rgba(244,63,94,0.04) 100%);
+  background: linear-gradient(135deg, var(--amber-bg) 0%, var(--rose-bg) 100%);
   pointer-events: none;
 }
 .xp-hero-left { display: flex; align-items: center; gap: 16px; }
@@ -952,7 +1030,7 @@ body {
   border-radius: 10px;
   width: 0%;
   transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
-  box-shadow: 0 0 8px rgba(245,158,11,0.4);
+  box-shadow: 0 0 8px var(--amber-glow-md);
 }
 
 /* Method card */
@@ -1028,7 +1106,7 @@ body {
   font-weight: 700;
   background: var(--amber-dim);
   color: var(--amber);
-  border: 1px solid rgba(245,158,11,0.25);
+  border: 1px solid var(--amber-border-sm);
   border-radius: 99px;
   padding: 3px 10px;
 }
@@ -1096,7 +1174,7 @@ body {
   background: var(--amber-dim);
   border-radius: 99px;
   padding: 2px 7px;
-  border: 1px solid rgba(245,158,11,0.2);
+  border: 1px solid var(--amber-border-xs);
 }
 
 .cc-title {
@@ -1124,7 +1202,7 @@ body {
 .challenge-card.done .cc-train-tag {
   background: var(--emerald-dim);
   color: var(--emerald);
-  border-color: rgba(16,185,129,0.2);
+  border-color: var(--emerald-border);
 }
 
 .cc-bottom {
@@ -1223,7 +1301,7 @@ body {
 /* ─── Import .md ─── */
 .import-status { display:block; margin-top:10px; font-size:12px; min-height:16px; }
 .import-status.ok { color: var(--emerald); }
-.import-status.error { color: var(--danger, #f87171); }
+.import-status.error { color: var(--danger); }
 .modal-divider { height:1px; background:var(--border); margin:18px 0; }
 
 /* ─── Tasks atômicas (mão na massa) ─── */
@@ -1284,6 +1362,40 @@ body {
 .empty-state h3 { font-size: 16px; color: var(--text-primary); margin: 4px 0 0; }
 .empty-state p { font-size: 13px; color: var(--text-muted); line-height: 1.6; max-width: 460px; }
 .empty-state code { background: var(--bg-elev); padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+
+/* ═══════════════ BADGES / CONQUISTAS ═══════════════ */
+.badges-section { margin-top: 28px; }
+.badges-container { margin-top: 12px; }
+.badges-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+}
+.badge-card {
+  background: linear-gradient(135deg, var(--bg-card), var(--indigo-dim));
+  border: 1px solid var(--border-accent);
+  border-radius: var(--radius-sm);
+  padding: 14px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex; align-items: center; gap: 8px;
+  transition: all var(--transition);
+}
+.badge-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--amber);
+  box-shadow: 0 4px 16px var(--amber-glow);
+}
+.badges-count {
+  margin-top: 10px; font-size: 12px; color: var(--text-muted); font-weight: 500;
+}
+.badges-empty {
+  background: var(--bg-card); border: 1px dashed var(--border);
+  border-radius: var(--radius-sm); padding: 16px;
+  font-size: 13px; color: var(--text-muted); text-align: center;
+}
+
 /* ═══════════════ MASCOTE (gatos pixel-art) ═══════════════ */
 .cat-svg { width: 100%; height: auto; display: block; image-rendering: pixelated; }
 
@@ -1438,3 +1550,29 @@ body {
   font-size: 12px; color: var(--text-muted); text-align: center;
 }
 
+/* ═══════════════ SELETOR DE TEMA ═══════════════ */
+.theme-options { display: flex; gap: 10px; margin-top: 6px; }
+.theme-option {
+  flex: 1;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 10px 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition);
+  font-size: 11px; font-weight: 600; color: var(--text-secondary);
+  text-align: center;
+}
+.theme-option:hover { border-color: var(--indigo); color: var(--text-primary); }
+.theme-option.active { border-color: var(--indigo); color: var(--indigo-light); background: var(--indigo-dim); box-shadow: 0 0 0 3px var(--indigo-glow); }
+.theme-swatch { display: flex; gap: 3px; margin-top: 2px; }
+.theme-swatch span { width: 10px; height: 10px; border-radius: 2px; }
+.theme-swatch.catppuccin span:nth-child(1) { background: #1e1e2e; }
+.theme-swatch.catppuccin span:nth-child(2) { background: #89b4fa; }
+.theme-swatch.catppuccin span:nth-child(3) { background: #f9e2af; }
+.theme-swatch.catppuccin span:nth-child(4) { background: #cba6f7; }
+.theme-swatch.premium span:nth-child(1) { background: #0a0c14; }
+.theme-swatch.premium span:nth-child(2) { background: #6366f1; }
+.theme-swatch.premium span:nth-child(3) { background: #f59e0b; }
+.theme-swatch.premium span:nth-child(4) { background: #8b5cf6; }

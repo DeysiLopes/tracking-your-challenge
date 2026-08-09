@@ -22,6 +22,20 @@ let state = {
   challengeBadges: [], // [{ challengeId, num, title, xp, date, skin }] badge de gato por desafio concluído
 };
 
+const THEME_KEY = '90dias-tracker-theme';
+
+function applyTheme(t) {
+  const theme = (t === 'premium' || t === 'catppuccin') ? t : 'catppuccin';
+  document.documentElement.setAttribute('data-theme', theme);
+  try { localStorage.setItem(THEME_KEY, theme); } catch (e) {}
+  return theme;
+}
+function initTheme() {
+  let t = null;
+  try { t = localStorage.getItem(THEME_KEY); } catch (e) {}
+  return applyTheme(t || 'catppuccin');
+}
+
 // Cache do servidor: { content: <objeto importado|null>, states: { <key>: <estado> } }
 let serverData = { content: null, states: {} };
 
@@ -1058,7 +1072,7 @@ function openChallengeModal(challengeId) {
   const lw = el('div', { style: 'display:flex;flex-wrap:wrap;gap:6px' });
   challenge.obsidianLinks.forEach(link => {
     lw.appendChild(el('span', {
-      style: 'font-size:11px;background:var(--violet-dim);border:1px solid rgba(139,92,246,0.2);color:#a78bfa;border-radius:99px;padding:2px 8px;font-family:JetBrains Mono,monospace'
+      style: 'font-size:11px;background:var(--violet-dim);border:1px solid var(--violet-border);color:var(--violet-light);border-radius:99px;padding:2px 8px;font-family:JetBrains Mono,monospace'
     }, link));
   });
   body.appendChild(lw);
@@ -1452,6 +1466,7 @@ function markAllInWeek(weekId) {
 // ════════════════════════════════════════════════════════
 window.appInit = new Promise(resolve => {
   document.addEventListener('DOMContentLoaded', async () => {
+  initTheme();
   // Carrega do servidor (SQLite) antes de restaurar, pois a chave de
   // estado depende do id do plano ativo.
   await loadAllFromServer();
@@ -1465,6 +1480,23 @@ window.appInit = new Promise(resolve => {
   // Welcome (estado vazio) — importar primeiro .md
   const welcomeBtn = $('welcome-import-btn');
   if (welcomeBtn) welcomeBtn.addEventListener('click', () => $('modal-config').style.display = 'flex');
+
+  // Theme options
+  function syncThemeOptions() {
+    const cur = document.documentElement.getAttribute('data-theme') || 'catppuccin';
+    [['catppuccin', 'theme-catppuccin'], ['premium', 'theme-premium']].forEach(([theme, id]) => {
+      const opt = $(id);
+      if (opt) opt.classList.toggle('active', cur === theme);
+    });
+  }
+  syncThemeOptions();
+  document.querySelectorAll('.theme-option').forEach(opt => {
+    opt.addEventListener('click', () => {
+      applyTheme(opt.dataset.themeOption);
+      syncThemeOptions();
+      showToast('Tema atualizado! 🎨');
+    });
+  });
 
   // Navigation
   document.querySelectorAll('.nav-item').forEach(btn => {
