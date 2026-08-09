@@ -2,8 +2,8 @@
  * parser.js — Converte arquivos .md do plano em dados do Tracker.
  *
  * Dois formatos suportados (auto-detectados):
- *  1. "programatico"  → CONSOLIDADO-90-DIAS.md  → plan (fases, semanas, tarefas, entregáveis). Suporta N dias.
- *  2. "mao-na-massa"  → 04-desafios-codigo-mao-na-massa.md → desafios com tasks atômicas
+ *  1. "programatico"  → arquivo de plano (## FASE N) → plan (fases, semanas, tarefas, entregáveis). Suporta N dias.
+ *  2. "mao-na-massa"  → arquivo de desafios (## Desafio N) → desafios com tasks atômicas
  *     (padrão de quebra inspirado em skills/tasks.md: titulo, descricao, dependencias, criterio).
  */
 
@@ -42,7 +42,7 @@ function parseDaysRange(s) {
 }
 
 // ─────────────────────────────────────────────────────────────
-//  PARSER: CONTEÚDO PROGRAMÁTICO (CONSOLIDADO-90-DIAS.md)
+//  PARSER: CONTEÚDO PROGRAMÁTICO (o plano importado)
 //  Estrutura esperada:
 //    ## FASE 1 — Dias 1–30: Fundamentos
 //    ### Semana 1 — SOLID

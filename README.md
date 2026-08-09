@@ -12,7 +12,7 @@ Plataforma web **sem build, sem dependências** (HTML5 + CSS3 + JavaScript ES6 p
 |------|---------------|
 | **Dashboard** | Dia atual (`Dia X de N`), barra de progresso geral e por fase, destaque da semana vigente com tarefas + entregável, mini-grid das semanas |
 | **Plano Semanal** | Visualização por fases (importadas de um `.md`), checklist separando leituras de práticas, entregável semanal, modal com detalhes e tags Obsidian |
-| **Desafios (gamificado)** | Lista de desafios importada de outro `.md`, XP por desafio (+500), níveis (Iniciante → Staff Engineer), streak 🔥, editor de tentativas em Markdown, tasks atômicas com critério de aceite e dependências |
+| **Desafios (gamificado)** | Lista de desafios importada de outro `.md`, XP por desafio (+500), níveis (Iniciante → Staff Engineer), streak 🔥, editor de tentativas em Markdown, tasks atômicas com critério de aceite e dependências, **mascote gatinho pixel-art** (se lambe ao concluir tasks, comemora ao concluir desafios) e **badges colecionáveis** com o nome de cada desafio concluído |
 | **Anotações** | Bloco de notas Markdown por semana, com suporte a wiki-links `[[...]]` e hashtags para o Obsidian |
 | **Exportação** | Export completo `.zip` (índice + progresso + cada semana + cada desafio em `.md` com YAML frontmatter), export da semana atual e do progresso |
 | **Importação** | Seletor de `.md` com auto-detecção de formato (veja [Formatos suportados](#-formatos-suportados)) |
@@ -132,7 +132,7 @@ Regras:
 ### Gate de substituição
 
 - **Plano programático:** pode ser substituído a qualquer momento (novo `.md`).
-- **Desafios:** novo upload só é permitido quando os desafios atuais estiverem **todos concluídos**. Antes disso o import é bloqueado (com opção de substituir perdendo o XP, mediante confirmação explícita).
+- **Desafios:** novo upload só é permitido quando os desafios atuais estiverem **todos concluídos**. Antes disso o import é bloqueado (sem atalho — finalize o desafio atual para liberar o próximo). Os badges de desafios já conquistados ficam salvos para sempre.
 
 ---
 
@@ -159,9 +159,10 @@ tracking-your-challenge/
 ├── server.py                  # Backend Python (stdlib): estáticos + API /api/data, /api/health + SQLite
 ├── tracker/                   # Frontend (sem build)
 │   ├── index.html             # Página única (sidebar, views, modal de import, export)
-│   ├── style.css              # Tema dark premium (glassmorphism, gradientes)
+│   ├── style.css              # Tema Catppuccin Mocha (padrão) + Dark Premium, glassmorphism
 │   ├── app.js                 # Lógica da UI, persistência (servidor + localStorage), import/export
 │   ├── parser.js              # Auto-detecção e parsing dos dois formatos .md
+│   ├── cats.js                # Mascote: gatos pixel-art em SVG por nível de XP + reações
 │   └── data.js                # Camada de dados / helpers
 ├── TEMPLATE-PLANO.md          # Template do formato programático
 ├── TEMPLATE-DESAFIOS.md       # Template do formato mão na massa
@@ -189,7 +190,10 @@ O projeto usa testes de comportamento (sem framework) para validar a persistênc
 ```bash
 node /tmp/opencode/test_tracker.js      # testes de unidade/API (Node, com fetch stub)
 node /tmp/opencode/browser_tests.js     # testes de browser (chromium headless + server temporário)
+node /tmp/opencode/harness-cats.js <pasta-dos-.md>   # gamificação + gatos — conteúdo vem do import real
 ```
+
+O `harness-cats.js` não fixa nenhum arquivo: ele descobre os `.md` da pasta indicada (via auto-detecção do parser), importa pelo fluxo real do app e valida XP/badges/gate/gatos. Assim, renomear arquivos nunca quebra o teste.
 
 ---
 

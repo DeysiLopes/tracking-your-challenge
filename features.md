@@ -17,7 +17,7 @@ Uma plataforma web moderna (HTML5, CSS3 Vanilla, JavaScript ES6+) construída pa
 ---
 
 ### 2. 📋 Plano Semanal de Estudos
-- **Visualização por Fases do plano importado** (ex.: `CONSOLIDADO-90-DIAS.md` gera):
+- **Visualização por Fases do plano importado** (ex.: `meu-plano-90-dias.md` gera):
   - **Fase 1 — Fundamentos (Dias 1–30):** SOLID, Arquitetura Hexagonal, DDD Tático I & II.
   - **Fase 2 — Distribuído (Dias 31–60):** Acoplamento, Decomposição, Dados, Replicação/Caching, Sagas, Workflows + Data Mesh.
   - **Fase 3 — System Design + Mocks (Dias 61–90):** Base, Ritmo de Provão, Mocks Finais.
@@ -33,6 +33,11 @@ Uma plataforma web moderna (HTML5, CSS3 Vanilla, JavaScript ES6+) construída pa
   - Acúmulo de XP a cada desafio concluído.
   - Progressão de títulos: *Iniciante → Aprendiz → Praticante → Competente → Proficiente → Senior → Staff Engineer*.
   - Anel e barra de nível com gradientes dinâmicos.
+- **🐱 Gatinhos pixel-art (mascote):** Cada nível de XP tem um gatinho diferente (cada vez mais "foda"): *Kitten → Gato Cool (óculos) → Gato Ninja → Gato Rocker → Gato Mago (chapéu) → Gato Brabo → Gato Lendário (coroa)*. O gato aparece na sidebar e no anel de XP:
+  - **Animação CSS+SVG:** o SVG é gerado em grupos semânticos (`cat-body`, `cat-ear-l/r`, `cat-eye-l/r`) e o CSS mexe só nas partes — **orelhas que se mexem alternadas**, **olhos que piscam** e balanço/bob suave do corpo (chapéu tira as orelhas, óculos tira o piscar). Pixel-art permanece intacto (sem borrar).
+  - Ao concluir uma tarefa, ele **se lambe** (groom) e solta uma mensagem de incentivo.
+  - Ao concluir um desafio ou subir de nível, ele **comemora** (pula com confete) e aparece um balão de fala.
+- **🏅 Badges de Desafio:** Cada desafio concluído vira um badge colecionável com **gatinho pixel art + o nome do desafio** (ex.: "90 Dias na Gringa"). Os badges acumulam para sempre, mesmo ao trocar a lista de desafios.
 - **Contador de Streak 🔥:** Registro de dias consecutivos realizando tentativas ou concluindo desafios.
 - **Guia "📐 Os 9 Passos":** Card retrátil com o método oficial de resolução de System Design (Requirements, Scale, API, Data Model, Architecture, Deep Dive, Failure, Scale x10, Trade-offs).
 - **Editor de Tentativas:** Espaço em Markdown para rascunhar a solução antes de marcar como finalizada, mantendo histórico de tentativas anteriores por desafio.
@@ -62,9 +67,9 @@ Uma plataforma web moderna (HTML5, CSS3 Vanilla, JavaScript ES6+) construída pa
 - **Conteúdo persistido:** O que foi importado (plano e/ou desafios) fica salvo no servidor (SQLite via `server.py`) e é restaurado automaticamente no próximo acesso — só começa vazio quem nunca fez upload.
 - **Importação na Interface:** Botões **📂 Importar** (sidebar e tela de boas-vindas) abrem o modal de configuração com seletor de arquivo `.md`. O tracker lê o conteúdo, detecta o formato e se adapta automaticamente.
 - **Auto-detecção de Conteúdo:**
-  - Formato *Programático*: Processa arquivos estruturados como `CONSOLIDADO-90-DIAS.md` (fases, semanas, dias, entregáveis) — **substitui** o plano atual.
+  - Formato *Programático*: Processa arquivos estruturados como `meu-plano-90-dias.md` (fases, semanas, dias, entregáveis) — **substitui** o plano atual.
   - Formato *Mão na Massa*: Processa desafios com tarefas atômicas e critérios de aceite — **substitui** a lista de desafios atual.
-- **Gate de desafios:** Novo upload de desafios só é permitido quando os desafios atuais estiverem **todos concluídos**; antes disso, o import é bloqueado (com opção de substituir via confirmação explícita, perdendo o progresso de XP). O plano programático pode ser substituído a qualquer momento.
+- **Gate de desafios:** Novo upload de desafios só é permitido quando os desafios atuais estiverem **todos concluídos**; antes disso, o import é bloqueado (sem atalho — finalize o atual para liberar o próximo). O plano programático pode ser substituído a qualquer momento.
 - **Suporte a N dias:** O total de dias (`totalDays`) é derivado do próprio arquivo importado — o tracker funciona para planos de 10, 30, 60, 90… dias, sem configuração extra.
 - **Cálculo de Prazos e Distribuição:** Distribui datas e IDs higienizados para os componentes do tracker.
 - **Estado Isolado por Plano:** Cada plano importado tem sua própria chave de estado no servidor, então importar outro plano não mistura (nem apaga) o progresso de planos anteriores.
@@ -82,7 +87,9 @@ Uma plataforma web moderna (HTML5, CSS3 Vanilla, JavaScript ES6+) construída pa
 ---
 
 ## 🎨 Design & Estética Visual
-- **Tema Dark Premium:** Paleta de cores baseada em tons escuros elegantes (Deep Slate / Dark Navy).
-- **Efeitos de Glassmorphism & Gradientes:** Transparências sutis, bordas com acento luminoso e sombras direcionadas.
-- **Tipografia Moderna:** Combinação das fontes `Inter` (UI) e `JetBrains Mono` (código/notas/IDs).
-- **Feedback Interativo:** Micro-animações em botões, tiles, cards e notificações toast responsivas.
+- **Tema padrão: 🐱 Catppuccin Mocha** (https://catppuccin.com/) — paleta oficial *Mocha* aplicada a todo o tracker (fundo, cards, acentos, texto e glows).
+- **Tema alternativo: 🌙 Dark Premium** — o visual anterior (deep slate/navy com glassmorphism) continua disponível.
+- **Seletor de tema no ⚙ Config:** escolha entre Catppuccin e Dark Premium; a preferência fica salva no navegador (Catppuccin é o padrão).
+- **Efeitos de Glassmorphism & Gradientes:** transparências sutis, bordas com acento luminoso e sombras direcionadas.
+- **Tipografia Moderna:** combinação das fontes `Inter` (UI) e `JetBrains Mono` (código/notas/IDs).
+- **Feedback Interativo:** micro-animações em botões, tiles, cards, notificações toast responsivas e o mascote gatinho pixel-art reativo.

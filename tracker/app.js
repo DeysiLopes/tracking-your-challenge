@@ -651,7 +651,7 @@ function renderCurrentWeekCard() {
   const container = $('current-week-card');
   if (!hasPlanContent()) {
     container.innerHTML = emptyNotice('Nenhum plano programático carregado',
-      'Importe um .md com <code>## FASE N — Dias...</code> (ex.: CONSOLIDADO-90-DIAS.md) em <strong>📂 Importar</strong>.');
+      'Importe um .md com <code>## FASE N — Dias...</code> em <strong>📂 Importar</strong>.');
     return;
   }
   const weekNum = getCurrentWeek();
@@ -735,7 +735,7 @@ function renderPlanView() {
   const container = $('plan-phases'); container.innerHTML = '';
   if (!hasPlanContent()) {
     container.innerHTML = emptyNotice('Nenhum plano programático carregado',
-      'Importe um .md com <code>## FASE N — Dias...</code> (ex.: CONSOLIDADO-90-DIAS.md) em <strong>📂 Importar</strong>.');
+      'Importe um .md com <code>## FASE N — Dias...</code> em <strong>📂 Importar</strong>.');
     return;
   }
   const cw = getCurrentWeek();
