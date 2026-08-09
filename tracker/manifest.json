@@ -1,0 +1,18 @@
+{
+  "name": "90 Dias na Gringa — Tracker",
+  "short_name": "Tracker",
+  "description": "Tracker pessoal de progresso — plano de 90 dias para vaga internacional",
+  "start_url": "/tracker/",
+  "display": "standalone",
+  "background_color": "#1e1e2e",
+  "theme_color": "#89b4fa",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/tracker/cat-favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
