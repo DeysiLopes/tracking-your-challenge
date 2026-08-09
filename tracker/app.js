@@ -453,6 +453,9 @@ function renderMascot() {
   if (nameEl) nameEl.textContent = catName(mascotLevel);
   const xpCat = $('xp-cat');
   if (xpCat) xpCat.innerHTML = catSVG(catForLevel(mascotLevel), 'cat-tier-' + mascotLevel);
+  // Atualiza também o ícone no sidebar (substitui avião por pixel-cat)
+  const logoIcon = $('logo-icon');
+  if (logoIcon) logoIcon.innerHTML = catSVG(catForLevel(mascotLevel), 'logo-cat cat-tier-' + mascotLevel);
 }
 
 function mascotGroom() {
