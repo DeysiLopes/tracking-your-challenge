@@ -932,12 +932,28 @@ function openWeekModal(weekId) {
   di.addEventListener('click', () => { toggleTask(week.deliverable.id, 'deliverables'); openWeekModal(weekId); });
   body.appendChild(di);
 
-  if (state.notes[weekId] && state.notes[weekId].trim()) {
-    body.appendChild(el('div', { className: 'modal-section-label', style: 'margin-top:12px' }, '📝 Nota'));
-    body.appendChild(el('pre', {
-      style: 'font-size:12px;color:var(--text-secondary);background:var(--bg-card);padding:12px;border-radius:8px;white-space:pre-wrap;max-height:150px;overflow-y:auto;font-family:JetBrains Mono,monospace;border:1px solid var(--border)'
-    }, state.notes[weekId]));
-  }
+  // Nota da semana: campo editável direto no modal
+  body.appendChild(el('div', { className: 'modal-section-label', style: 'margin-top:12px' }, '📝 Nota'));
+  const noteTa = el('textarea', {
+    className: 'attempt-editor',
+    id: 'modal-week-note-text',
+    placeholder: 'Escreva uma nota para a semana (será salva no painel de Notas)...',
+    style: 'min-height:96px;width:100%;box-sizing:border-box;margin-top:8px'
+  }, state.notes[weekId] || '');
+  body.appendChild(noteTa);
+  const noteBtns = el('div', { style: 'margin-top:8px;display:flex;gap:8px' });
+  const saveNoteBtn = el('button', { className: 'btn btn-secondary', onClick: () => {
+    const v = ($('modal-week-note-text').value || '').trim();
+    if (!v) { showToast('Escreva algo antes de salvar! ✏️'); return; }
+    state.notes[weekId] = v; saveState(); renderNotesView(); showToast('Nota salva! 💾');
+  } }, '💾 Salvar Nota');
+  const clearNoteBtn = el('button', { className: 'btn btn-secondary', onClick: () => {
+    $('modal-week-note-text').value = '';
+    state.notes[weekId] = '';
+    saveState(); renderNotesView(); showToast('Nota apagada 🗑️');
+  } }, '🗑 Limpar Nota');
+  noteBtns.appendChild(saveNoteBtn); noteBtns.appendChild(clearNoteBtn);
+  body.appendChild(noteBtns);
 
   body.appendChild(el('div', { className: 'modal-section-label', style: 'margin-top:12px' }, '🏷️ Tags Obsidian'));
   const tw = el('div', { style: 'display:flex;flex-wrap:wrap;gap:6px' });
