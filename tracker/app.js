@@ -148,6 +148,35 @@ function planFinalized() {
   return allWeeks.length > 0 && allWeeks.every(w => getWeekProgress(w).pct === 100);
 }
 
+function hasOverdueWeeks() {
+  if (!hasPlanContent() || !state.startDate) return false;
+  const now = new Date();
+  for (const week of ACTIVE_PLAN.allWeeks) {
+    const prog = getWeekProgress(week);
+    if (prog.pct < 100) { // Semana não finalizada
+      const weekNum = ACTIVE_PLAN.allWeeks.indexOf(week) + 1;
+      const expectedEnd = new Date(state.startDate);
+      expectedEnd.setDate(expectedEnd.getDate() + (weekNum * 7));
+      if (now > expectedEnd) return true; // Passou do prazo
+    }
+  }
+  return false;
+}
+
+function hasOverdueChallenges() {
+  if (!hasChallengesContent()) return false;
+  const now = new Date();
+  for (const challenge of CHALLENGES_DATA.allChallenges) {
+    const cs = getChallengeState(challenge.id);
+    if (!cs.done) {
+      const activity = cs.lastActivity ? new Date(cs.lastActivity) : new Date(state.startDate || now);
+      const daysSinceUpdate = Math.floor((now - activity) / 86400000);
+      if (daysSinceUpdate > 7) return true; // Mais de 7 dias sem atualização
+    }
+  }
+  return false;
+}
+
 function emptyNotice(title, desc) {
   return `<div class="empty-state"><div class="empty-icon">📂</div>
     <h3>${title}</h3><p>${desc}</p></div>`;
@@ -223,7 +252,11 @@ function toggleChallengeTask(challengeId, taskKey) {
   cs.tasks = cs.tasks || {};
   const was = !!cs.tasks[taskKey];
   cs.tasks[taskKey] = !cs.tasks[taskKey];
-  if (cs.tasks[taskKey] && !was) { recordActivity(); mascotCheer(); }
+  if (cs.tasks[taskKey] && !was) { 
+    recordActivity();
+    cs.lastActivity = new Date().toISOString(); // Registra última atividade
+    mascotCheer(); 
+  }
   if (!state.challenges[challengeId]) state.challenges[challengeId] = cs;
   saveState();
   if (cs.tasks[taskKey] && !was) {
@@ -454,7 +487,10 @@ const MASCOT_SAYS = [
 
 function renderMascot() {
   const elCat = $('mascot-cat');
-  if (elCat) elCat.innerHTML = catSVG(catForLevel(mascotLevel), 'cat-idle cat-tier-' + mascotLevel);
+  const isCrying = hasOverdueWeeks() || hasOverdueChallenges();
+  const classStr = isCrying ? 'cat-idle cat-crying cat-tier-' + mascotLevel : 'cat-idle cat-tier-' + mascotLevel;
+  
+  if (elCat) elCat.innerHTML = catSVG(catForLevel(mascotLevel), classStr);
   const nameEl = $('mascot-name');
   if (nameEl) nameEl.textContent = catName(mascotLevel);
   const xpCat = $('xp-cat');
@@ -1187,7 +1223,9 @@ function registerAttempt() {
   const text = ($('challenge-attempt-text')?.value || '').trim();
   if (!text) { showToast('Escreva algo antes de registrar! ✏️'); return; }
   if (!state.challenges[activeChallengeId]) state.challenges[activeChallengeId] = { done: false, attempts: [] };
-  state.challenges[activeChallengeId].attempts.push({ date: new Date().toISOString(), text });
+  const cs = state.challenges[activeChallengeId];
+  cs.attempts.push({ date: new Date().toISOString(), text });
+  cs.lastActivity = new Date().toISOString(); // Registra última atividade
   recordActivity();
   saveState();
   showToast('Tentativa registrada! 🔄');
@@ -1231,6 +1269,7 @@ function toggleChallengeDone() {
     }
 
     cs.done = true;
+    cs.lastActivity = new Date().toISOString(); // Registra última atividade
     const c = CHALLENGES_DATA.allChallenges.find(c => c.id === activeChallengeId);
     awardChallengeBadge(c);
     recordActivity();

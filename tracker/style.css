@@ -1564,6 +1564,25 @@ body {
   100% { transform: scale(1); opacity: 1; }
 }
 
+@keyframes cat-tear-fall {
+  0% { transform: translateY(0) scaleY(1); opacity: 1; }
+  100% { transform: translateY(14px) scaleY(0.6); opacity: 0; }
+}
+
+.cat-crying .cat-eye::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1.5px;
+  height: 4px;
+  background: #a6e3ff;
+  border-radius: 50%;
+  animation: cat-tear-fall 1s ease-in infinite;
+  filter: drop-shadow(0 0 2px rgba(166,227,255,0.7));
+}
+
 /* Gato dentro do anel de nível (XP) */
 .xp-cat {
   width: 46px; height: 42px;
