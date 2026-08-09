@@ -973,16 +973,19 @@ function openChallengeModal(challengeId) {
       const item = el('label', {
         className: 'atomic-task' + (cs2.tasks[t.key] ? ' done' : '') + (enabled ? '' : ' locked')
       });
-      const checkbox = el('input', { type: 'checkbox', dataChallenge: challengeId, dataTask: t.key, checked: !!cs2.tasks[t.key] });
-      if (!enabled) checkbox.disabled = true;
-      const content = el('div', { className: 'atomic-task-content' });
-      const row = el('div', { className: 'atomic-task-title' }, `${t.icon} ${t.title}`);
-      if (t.criteria) content.appendChild(el('div', { className: 'atomic-task-criteria' }, t.criteria));
-      if (t.deps.length) content.appendChild(el('div', { className: 'atomic-task-deps' }, `depende de: ${t.deps.join(', ')}`));
-      content.prepend(row);
-      item.appendChild(checkbox);
-      item.appendChild(content);
-      tw.appendChild(item);
+    // Criar atributos data-* corretamente para que dataset.challenge/task funcione
+    const checkbox = el('input', { type: 'checkbox', 'data-challenge': challengeId, 'data-task': t.key });
+    // Garantir o estado checked/disabled via propriedades (mais confiável que setAttribute)
+    checkbox.checked = !!cs2.tasks[t.key];
+    if (!enabled) checkbox.disabled = true;
+    const content = el('div', { className: 'atomic-task-content' });
+    const row = el('div', { className: 'atomic-task-title' }, `${t.icon} ${t.title}`);
+    if (t.criteria) content.appendChild(el('div', { className: 'atomic-task-criteria' }, t.criteria));
+    if (t.deps.length) content.appendChild(el('div', { className: 'atomic-task-deps' }, `depende de: ${t.deps.join(', ')}`));
+    content.prepend(row);
+    item.appendChild(checkbox);
+    item.appendChild(content);
+    tw.appendChild(item);
     });
     body.appendChild(tw);
   }
@@ -1023,6 +1026,15 @@ function openChallengeModal(challengeId) {
   doneBtn.textContent = cs.done ? '✅ Concluído! Remover ✓' : '✅ Marcar como Concluído (+' + challenge.xp + ' XP)';
   doneBtn.className = cs.done ? 'btn btn-done' : 'btn btn-primary';
 
+  // Se o desafio possuir tasks atômicas, só permitir concluir quando 100% delas estiverem marcadas.
+  const allTasksDone = challenge.tasks && challenge.tasks.length ? (tprog.pct === 100) : true;
+  doneBtn.disabled = !allTasksDone;
+  if (!allTasksDone) {
+    doneBtn.setAttribute('title', 'Complete todas as tasks atômicas antes de concluir (ganhe XP a cada task).');
+  } else {
+    doneBtn.removeAttribute('title');
+  }
+
   $('modal-challenge').style.display = 'flex';
 }
 
@@ -1054,6 +1066,16 @@ function toggleChallengeDone() {
 
   if (!wasDone) {
     const text = ($('challenge-attempt-text')?.value || '').trim();
+    // Antes de aceitar conclusão, garantir que todas as tasks atômicas estão completas
+    const challengeObj = CHALLENGES_DATA.allChallenges.find(c => c.id === activeChallengeId);
+    if (challengeObj && challengeObj.tasks && challengeObj.tasks.length) {
+      const tprog2 = getChallengeTasksProgress(challengeObj);
+      if (tprog2.pct !== 100) {
+        showToast('Complete todas as tasks atômicas antes de concluir!');
+        return;
+      }
+    }
+
     // Considera apenas tentativas com texto válido — evita aceitar tentativas vazias como "nota".
     const hasPastAttempts = cs.attempts && cs.attempts.some(a => a && a.text && a.text.trim().length > 0);
 
