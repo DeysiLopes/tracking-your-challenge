@@ -32,6 +32,9 @@ python3 server.py
 
 # Porta / banco personalizados
 python3 server.py --port 9000 --db /caminho/tracker.db
+
+# Modo teste com banco separado (não mexe no tracker.db oficial)
+python3 server.py --port 9000 --db tracker-tests.db
 ```
 
 Abra no navegador: **http://localhost:8765/tracker/** (a raiz `/` redireciona para `/tracker/`).

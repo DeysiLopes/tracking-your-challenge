@@ -48,6 +48,7 @@ Uma plataforma web moderna (HTML5, CSS3 Vanilla, JavaScript ES6+) construída pa
   - **Animação CSS+SVG:** o SVG é gerado em grupos semânticos (`cat-body`, `cat-ear-l/r`, `cat-eye-l/r`) e o CSS mexe só nas partes — **orelhas que se mexem alternadas**, **olhos que piscam** e balanço/bob suave do corpo (chapéu tira as orelhas, óculos tira o piscar). Pixel-art permanece intacto (sem borrar).
   - Ao concluir uma tarefa, ele **se lambe** (groom) e solta uma mensagem de incentivo.
   - Ao concluir um desafio ou subir de nível, ele **comemora** (pula com confete) e aparece um balão de fala.
+  - Quando há muito tempo sem atividade, ele **chora**: semanas atrasadas ou desafios não concluídos sem atualização por mais de 7 dias ativam lágrimas animadas no mascote.
 - **🏅 Badges de Desafio:** Cada desafio concluído vira um badge colecionável com **gatinho pixel art + o nome do desafio** (ex.: "90 Dias na Gringa"). Os badges acumulam para sempre, mesmo ao trocar a lista de desafios.
 - **Contador de Streak 🔥:** Registro de dias consecutivos realizando tentativas ou concluindo desafios.
 - **Guia "📐 Os 9 Passos":** Card retrátil com o método oficial de resolução de System Design (Requirements, Scale, API, Data Model, Architecture, Deep Dive, Failure, Scale x10, Trade-offs).
@@ -197,4 +198,3 @@ Uma plataforma web moderna (HTML5, CSS3 Vanilla, JavaScript ES6+) construída pa
 - **Deploy:** Systemd User Service (`tracker.service`) para auto-start.
 - **Favicon:** SVG pixel-art de gato.
 - **Armazenamento:** Dual (localStorage + SQLite via API).
-
