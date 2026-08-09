@@ -196,6 +196,7 @@ function toggleChallengeTask(challengeId, taskKey) {
   cs.tasks = cs.tasks || {};
   const was = !!cs.tasks[taskKey];
   cs.tasks[taskKey] = !cs.tasks[taskKey];
+  if (cs.tasks[taskKey] && !was) { recordActivity(); mascotCheer(); }
   if (!state.challenges[challengeId]) state.challenges[challengeId] = cs;
   saveState();
   if (cs.tasks[taskKey] && !was) {
@@ -204,6 +205,7 @@ function toggleChallengeTask(challengeId, taskKey) {
     if (t) showToast(`+25 XP · ${t.title} ⚡`);
   }
   checkBadges();
+  syncCatLevel();
 }
 function getEarnedXP() {
   let xp = 0;
@@ -249,14 +251,14 @@ function getCompletedChallengesCount() {
   return CHALLENGES_DATA.allChallenges.filter(c => getChallengeState(c.id).done).length;
 }
 function getStreak() {
-  // Count consecutive days with at least one challenge done or attempted
-  const datesSet = new Set();
-  Object.values(state.challenges).forEach(cs => {
+  // Dias consecutivos com atividade registrada (plano ou desafios)
+  const datesSet = new Set(state.activityDates || []);
+  Object.values(state.challenges || {}).forEach(cs => {
     (cs.attempts || []).forEach(a => datesSet.add(a.date.split('T')[0]));
     if (cs.done) datesSet.add(new Date().toISOString().split('T')[0]);
   });
   let streak = 0;
-  let d = new Date(); d.setHours(0,0,0,0);
+  let d = new Date(); d.setHours(0, 0, 0, 0);
   while (datesSet.has(d.toISOString().split('T')[0])) {
     streak++;
     d.setDate(d.getDate() - 1);
@@ -386,6 +388,96 @@ const el = (tag, attrs = {}, ...children) => {
   return e;
 };
 function setBar(id, pct) { const b = $(id); if (b) b.style.width = pct + '%'; }
+
+// ════════════════════════════════════════════════════════
+//  MASCOTE (gatos pixel-art)
+//  O gato da sidebar acompanha o nível de XP, se lambe ao
+//  concluir tasks e comemora (pula + confete) ao concluir
+//  desafios ou evoluir de nível.
+// ════════════════════════════════════════════════════════
+let mascotLevel = 1;
+let lastKnownLevel = 1;
+let mascotSayTimer = null;
+
+const MASCOT_SAYS = [
+  'Meow! Ótimo! 🐾',
+  'Você é incrível! 😼',
+  'Continue assim! 🔥',
+  'Mais um passo! ✨',
+  'Purrr... 🐱',
+];
+
+function renderMascot() {
+  const elCat = $('mascot-cat');
+  if (elCat) elCat.innerHTML = catSVG(catForLevel(mascotLevel), 'cat-idle cat-tier-' + mascotLevel);
+  const nameEl = $('mascot-name');
+  if (nameEl) nameEl.textContent = catName(mascotLevel);
+  const xpCat = $('xp-cat');
+  if (xpCat) xpCat.innerHTML = catSVG(catForLevel(mascotLevel), 'cat-tier-' + mascotLevel);
+}
+
+function mascotGroom() {
+  const elCat = $('mascot-cat');
+  if (!elCat) return;
+  elCat.querySelectorAll('.cat-svg').forEach(s => {
+    s.classList.remove('cat-idle');
+    s.classList.add('cat-lick');
+    setTimeout(() => { s.classList.remove('cat-lick'); s.classList.add('cat-idle'); }, 1700);
+  });
+}
+
+function mascotCelebrate() {
+  const elCat = $('mascot-cat');
+  if (!elCat) return;
+  elCat.querySelectorAll('.cat-svg').forEach(s => {
+    s.classList.remove('cat-idle');
+    s.classList.add('cat-celebrate');
+    setTimeout(() => { s.classList.remove('cat-celebrate'); s.classList.add('cat-idle'); }, 2400);
+  });
+  spawnConfetti($('mascot-box'));
+  mascotSay('Meow! 🎉');
+}
+
+function mascotSay(text, ms = 2600) {
+  const b = $('mascot-bubble');
+  if (!b) return;
+  b.textContent = text;
+  b.classList.add('show');
+  clearTimeout(mascotSayTimer);
+  mascotSayTimer = setTimeout(() => b.classList.remove('show'), ms);
+}
+
+function mascotCheer() {
+  mascotGroom();
+  mascotSay(MASCOT_SAYS[Math.floor(Math.random() * MASCOT_SAYS.length)], 2000);
+}
+
+function spawnConfetti(container) {
+  if (!container) return;
+  const colors = ['#89b4fa', '#f9e2af', '#f38ba8', '#a6e3a1', '#cba6f7', '#94e2d5'];
+  for (let i = 0; i < 18; i++) {
+    const s = el('span', {
+      className: 'confetti',
+      style: `left:${Math.random() * 100}%;background:${colors[i % colors.length]};animation-delay:${(Math.random() * 0.25).toFixed(2)}s`
+    });
+    container.appendChild(s);
+    setTimeout(() => s.remove(), 1600);
+  }
+}
+
+// Sincroniza o gato com o nível atual de XP e comemora ao subir de nível.
+function syncCatLevel() {
+  const lvl = getCurrentXPLevel(getTotalXP()).level;
+  if (lvl > lastKnownLevel) {
+    mascotCelebrate();
+    mascotSay(`Você virou ${catName(lvl)}! 🐾`, 3200);
+  }
+  lastKnownLevel = lvl;
+  if (lvl !== mascotLevel) {
+    mascotLevel = lvl;
+    renderMascot();
+  }
+}
 
 // ════════════════════════════════════════════════════════
 //  IMPORTAR PLANO VIA .md
@@ -525,6 +617,7 @@ function renderDashboard() {
   renderWeeksGrid();
   renderBadges('badges-grid-dashboard');
   renderChallengeBadges('challenge-badges-dashboard');
+  syncCatLevel();
 }
 
 function renderCurrentWeekCard() {
@@ -725,6 +818,7 @@ function renderChallengesView() {
   // Badges (também aparece aqui na view de desafios)
   renderBadges('badges-grid-challenges');
   renderChallengeBadges('challenge-badges-challenges');
+  syncCatLevel();
 
   // Method steps (only build once)
   const methodSteps = $('method-steps');
@@ -989,9 +1083,11 @@ function registerAttempt() {
   if (!text) { showToast('Escreva algo antes de registrar! ✏️'); return; }
   if (!state.challenges[activeChallengeId]) state.challenges[activeChallengeId] = { done: false, attempts: [] };
   state.challenges[activeChallengeId].attempts.push({ date: new Date().toISOString(), text });
+  recordActivity();
   saveState();
   showToast('Tentativa registrada! 🔄');
   checkBadges();
+  syncCatLevel();
   openChallengeModal(activeChallengeId); // re-render
 }
 
@@ -1007,12 +1103,15 @@ function toggleChallengeDone() {
     if (text) state.challenges[activeChallengeId].attempts.push({ date: new Date().toISOString(), text });
     const c = CHALLENGES_DATA.allChallenges.find(c => c.id === activeChallengeId);
     awardChallengeBadge(c);
+    recordActivity();
     showToast(`+${c.xp} XP! Desafio concluído! ⚡`);
+    mascotCelebrate();
   } else {
     showToast('Desafio desmarcado');
   }
   saveState();
   checkBadges();
+  syncCatLevel();
   openChallengeModal(activeChallengeId);
 }
 
@@ -1023,6 +1122,7 @@ function toggleTask(id, type) {
   const wasDone = !!state[type][id];
   state[type][id] = !state[type][id];
   const nowDone = state[type][id];
+  if (nowDone && !wasDone) { recordActivity(); mascotCheer(); }
   saveState();
   if (nowDone && !wasDone) {
     // Toast de XP ganho
@@ -1034,7 +1134,14 @@ function toggleTask(id, type) {
     }
   }
   checkBadges();
+  syncCatLevel();
+}
 
+// Registra o dia de hoje como "dia ativo" (para streak e conquistas).
+function recordActivity() {
+  const today = new Date().toISOString().split('T')[0];
+  state.activityDates = state.activityDates || [];
+  if (!state.activityDates.includes(today)) state.activityDates.push(today);
 }
 
 // ════════════════════════════════════════════════════════
@@ -1351,6 +1458,9 @@ window.appInit = new Promise(resolve => {
   await restoreContent();
   await loadState();
   syncAppBranding();
+  lastKnownLevel = getCurrentXPLevel(getTotalXP()).level;
+  mascotLevel = lastKnownLevel;
+  renderMascot();
 
   // Welcome (estado vazio) — importar primeiro .md
   const welcomeBtn = $('welcome-import-btn');

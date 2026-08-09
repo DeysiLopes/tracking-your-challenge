@@ -906,12 +906,13 @@ body {
 .xp-hero-left { display: flex; align-items: center; gap: 16px; }
 
 .xp-level-ring {
-  width: 72px; height: 72px;
+  width: 78px; height: 78px;
   border-radius: 50%;
   background: conic-gradient(var(--amber) 0%, var(--rose) 60%, var(--bg-hover) 60%);
-  display: flex; align-items: center; justify-content: center;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
   flex-shrink: 0;
   position: relative;
+  gap: 1px;
   transition: background 0.8s ease;
 }
 .xp-level-ring::after {
@@ -923,7 +924,7 @@ body {
 }
 .xp-level-num {
   position: relative; z-index: 1;
-  font-size: 24px; font-weight: 800;
+  font-size: 13px; font-weight: 800;
   color: var(--amber);
   line-height: 1;
 }
@@ -1283,38 +1284,122 @@ body {
 .empty-state h3 { font-size: 16px; color: var(--text-primary); margin: 4px 0 0; }
 .empty-state p { font-size: 13px; color: var(--text-muted); line-height: 1.6; max-width: 460px; }
 .empty-state code { background: var(--bg-elev); padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+/* ═══════════════ MASCOTE (gatos pixel-art) ═══════════════ */
+.cat-svg { width: 100%; height: auto; display: block; image-rendering: pixelated; }
 
-/* ═══════════════ BADGES / CONQUISTAS ═══════════════ */
-.badges-section { margin-top: 28px; }
-.badges-container { margin-top: 12px; }
-.badges-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 10px;
+/* ── Partes animadas do SVG (grupos gerados no cats.js) ──
+   Só orelhas e olhos "mexem" (transform-box: fill-box → a rotação/
+   escala pivota no próprio bbox, sem borrar o pixel-art do corpo). */
+.cat-ear, .cat-eye { transform-box: fill-box; }
+.cat-ear {
+  transform-origin: 50% 95%;
+  animation: cat-ear-twitch-l 4.6s ease-in-out infinite;
 }
-.badge-card {
-  background: linear-gradient(135deg, var(--bg-card), var(--indigo-dim));
+.cat-ear-r { animation-name: cat-ear-twitch-r; }
+@keyframes cat-ear-twitch-l {
+  0%, 82%, 100% { transform: rotate(0deg); }
+  86%            { transform: rotate(-8deg); }
+  89%            { transform: rotate(0deg); }
+}
+@keyframes cat-ear-twitch-r {
+  0%, 40%, 100% { transform: rotate(0deg); }
+  44%           { transform: rotate(8deg); }
+  47%           { transform: rotate(0deg); }
+}
+.cat-eye {
+  transform-origin: 50% 55%;
+  animation: cat-blink 5.2s ease-in-out infinite;
+}
+@keyframes cat-blink {
+  0%, 90%, 100% { transform: scaleY(1); }
+  93%           { transform: scaleY(0.1); }
+  95%           { transform: scaleY(1); }
+}
+
+.mascot-box {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  background: var(--bg-card);
   border: 1px solid var(--border-accent);
-  border-radius: var(--radius-sm);
-  padding: 14px 12px;
-  font-size: 13px;
-  font-weight: 600;
+  border-radius: var(--radius-md);
+  padding: 12px 10px 10px;
+  margin: 4px 0;
+  overflow: visible;
+}
+.mascot-cat { width: 90px; }
+.mascot-name { font-size: 11px; font-weight: 700; color: var(--indigo-light); letter-spacing: 0.2px; }
+.mascot-bubble {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  background: var(--bg-elev);
+  border: 1px solid var(--border-accent);
   color: var(--text-primary);
-  display: flex; align-items: center; gap: 8px;
-  transition: all var(--transition);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 5px 9px;
+  border-radius: 8px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
+  z-index: 30;
 }
-.badge-card:hover {
-  transform: translateY(-2px);
-  border-color: var(--amber);
-  box-shadow: 0 4px 16px var(--amber-glow);
+.mascot-bubble.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+@keyframes cat-bob {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25%      { transform: translateY(-1.5px) rotate(-1deg); }
+  60%      { transform: translateY(2px) rotate(1deg); }
 }
-.badges-count {
-  margin-top: 10px; font-size: 12px; color: var(--text-muted); font-weight: 500;
+.cat-idle { animation: cat-bob 2.8s ease-in-out infinite; }
+
+@keyframes cat-lick {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25%      { transform: translateY(3px) rotate(-5deg); }
+  50%      { transform: translateY(0) rotate(0deg); }
+  75%      { transform: translateY(3px) rotate(5deg); }
 }
-.badges-empty {
-  background: var(--bg-card); border: 1px dashed var(--border);
-  border-radius: var(--radius-sm); padding: 16px;
-  font-size: 13px; color: var(--text-muted); text-align: center;
+.cat-lick { animation: cat-lick 0.5s ease-in-out 3; }
+
+@keyframes cat-jump {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  30%      { transform: translateY(-12px) rotate(-7deg); }
+  60%      { transform: translateY(0) rotate(6deg); }
+  80%      { transform: translateY(-5px) rotate(0deg); }
+}
+.cat-celebrate { animation: cat-jump 0.7s cubic-bezier(0.4,0,0.2,1) 3; }
+
+/* Durante as reações as partes acompanham mais rápido (fofura) */
+.cat-lick .cat-ear { animation-duration: 0.6s; }
+.cat-celebrate .cat-eye { animation-duration: 0.45s; }
+
+.cat-tier-5 { filter: drop-shadow(0 0 5px rgba(203,166,247,0.55)); }
+.cat-tier-6 { filter: drop-shadow(0 0 6px rgba(243,139,168,0.55)); }
+.cat-tier-7 { filter: drop-shadow(0 0 10px rgba(249,226,175,0.7)); }
+
+.confetti {
+  position: absolute;
+  top: -6px;
+  width: 6px; height: 6px;
+  border-radius: 1px;
+  animation: confetti-fall 1.2s ease-in forwards;
+  pointer-events: none;
+  z-index: 20;
+}
+@keyframes confetti-fall {
+  to { transform: translateY(90px) rotate(360deg); opacity: 0; }
+}
+
+/* Gato dentro do anel de nível (XP) */
+.xp-cat {
+  width: 46px; height: 42px;
+  position: relative; z-index: 1;
+  display: flex; align-items: center; justify-content: center;
 }
 
 /* ═══════════════ BADGES DE DESAFIOS (gato + nome) ═══════════════ */
