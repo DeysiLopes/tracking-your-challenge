@@ -174,7 +174,8 @@ body {
   border-bottom: 1px solid var(--border);
   margin-bottom: 8px;
 }
-.logo-icon { font-size: 28px; filter: drop-shadow(0 0 12px var(--indigo-glow-xl)); }
+.logo-icon { width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; filter: drop-shadow(0 0 12px var(--indigo-glow-xl)); }
+.logo-icon .cat-svg, .logo-icon svg { width: 28px; height: 28px; }
 .logo-text { display: flex; flex-direction: column; }
 .logo-title { font-weight: 800; font-size: 15px; color: var(--text-primary); letter-spacing: -0.3px; }
 .logo-sub   { font-size: 11px; color: var(--text-muted); font-weight: 400; }
