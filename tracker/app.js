@@ -629,103 +629,43 @@ function renderDashboard() {
   $('header-date').textContent = new Date().toLocaleDateString('pt-BR',
     { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
 
-  const totalPct = getTotalProgress();
-  $('stat-total-pct').textContent = totalPct + '%'; setBar('bar-total', totalPct);
-  ACTIVE_PLAN.phases.forEach((phase, i) => {
-    const pct = getPhaseProgress(phase); const n = i + 1;
-    $(`stat-p${n}-pct`).textContent = pct + '%'; setBar(`bar-p${n}`, pct);
-  });
-
   if (state.startDate)
     $('header-subtitle').textContent =
       `Dia ${day} de ${ACTIVE_PLAN.totalDays} · Iniciado em ${formatDate(state.startDate)} · Semana ${getCurrentWeek()} de ${ACTIVE_PLAN.allWeeks.length}`;
 
-  renderCurrentWeekCard();
-  renderWeeksGrid();
+  renderXPHero();
   renderBadges('badges-grid-dashboard');
   renderChallengeBadges('challenge-badges-dashboard');
   syncCatLevel();
 }
 
-function renderCurrentWeekCard() {
-  const container = $('current-week-card');
-  if (!hasPlanContent()) {
-    container.innerHTML = emptyNotice('Nenhum plano programático carregado',
-      'Importe um .md com <code>## FASE N — Dias...</code> em <strong>📂 Importar</strong>.');
-    return;
+// Hero do Dashboard: carinha do gato em pixel art + nível + XP geral / mão na massa / plano.
+function renderXPHero() {
+  const totalXP = getTotalXP();
+  const xpMao = getEarnedXP();
+  const xpPlano = getPlanXP();
+  const curLevel = getCurrentXPLevel(totalXP);
+  const nextLevel = getNextXPLevel(totalXP);
+
+  $('xp-total').textContent = totalXP;
+  $('xp-desafios').textContent = xpMao;
+  $('xp-plano').textContent = xpPlano;
+
+  $('xp-level-num').textContent = curLevel.level;
+  $('xp-hero-title').textContent = curLevel.title;
+  const catEl = $('xp-cat');
+  if (catEl) catEl.innerHTML = catSVG(catForLevel(mascotLevel), 'cat-idle cat-tier-' + mascotLevel);
+
+  if (nextLevel) {
+    const pct = Math.round(((totalXP - curLevel.minXP) / (nextLevel.minXP - curLevel.minXP)) * 100);
+    $('xp-hero-sub').textContent = `${totalXP - curLevel.minXP} / ${nextLevel.minXP - curLevel.minXP} XP para ${nextLevel.title}`;
+    $('xp-bar-fill').style.width = pct + '%';
+    $('xp-level-ring').style.background =
+      `conic-gradient(var(--amber) 0deg, var(--rose) ${pct * 3.6}deg, var(--bg-hover) ${pct * 3.6}deg)`;
+  } else {
+    $('xp-hero-sub').textContent = '🏆 Nível máximo atingido!';
+    $('xp-bar-fill').style.width = '100%';
   }
-  const weekNum = getCurrentWeek();
-  if (!state.startDate || !weekNum) {
-    container.innerHTML = `<div class="cw-loading">Configure a data de início para ver a semana atual. Clique em <strong>⚙ Config</strong>. 🚀</div>`;
-    return;
-  }
-  const week = ACTIVE_PLAN.allWeeks.find(w => w.id === weekNum);
-  if (!week) { container.innerHTML = `<div class="cw-loading">🎉 Parabéns! Plano concluído!</div>`; return; }
-  const phase = ACTIVE_PLAN.phases.find(p => p.id === week.phase);
-  const prog = getWeekProgress(week);
-  container.innerHTML = '';
-
-  container.appendChild(el('div', { className: 'cw-header' },
-    el('span', { className: 'cw-badge' }, '📍 Semana ' + week.id),
-    el('span', { className: 'cw-phase-badge' }, phase.name + ' · ' + week.days)
-  ));
-  container.appendChild(el('h3', { className: 'cw-title' }, week.title));
-
-  const tasksList = el('div', { className: 'cw-tasks' });
-  week.tasks.forEach(task => {
-    const isDone = !!state.tasks[task.id];
-    const item = el('div', { className: 'task-item' + (isDone ? ' done' : '') });
-    item.appendChild(el('div', { className: 'task-check' }, isDone ? '✓' : ''));
-    item.appendChild(el('span', { className: 'task-text' }, task.text));
-    item.addEventListener('click', () => { toggleTask(task.id, 'tasks'); renderCurrentWeekCard(); updateStats(); });
-    tasksList.appendChild(item);
-  });
-
-  const delDone = !!state.deliverables[week.deliverable.id];
-  const delItem = el('div', { className: 'task-item' + (delDone ? ' done' : '') });
-  delItem.appendChild(el('div', { className: 'task-check' }, delDone ? '✓' : ''));
-  const dc = el('div');
-  dc.appendChild(el('div', { className: 'task-text', style: 'font-weight:600' }, week.deliverable.text));
-  dc.appendChild(el('span', { className: 'task-deliverable-badge' }, week.deliverable.icon + ' Entregável'));
-  delItem.appendChild(dc);
-  delItem.addEventListener('click', () => { toggleTask(week.deliverable.id, 'deliverables'); renderCurrentWeekCard(); updateStats(); });
-  tasksList.appendChild(delItem);
-  container.appendChild(tasksList);
-
-  const progBar = el('div', { style: 'margin-top:16px' });
-  const bw = el('div', { className: 'stat-bar-wrap', style: 'height:6px' });
-  bw.appendChild(el('div', { className: 'stat-bar', style: `width:${prog.pct}%; background:linear-gradient(90deg,var(--indigo),var(--violet))` }));
-  progBar.appendChild(el('div', { style: 'font-size:11px;color:var(--text-muted);margin-bottom:6px;font-weight:600' },
-    `${prog.done}/${prog.total} tarefas · ${prog.pct}% concluída`));
-  progBar.appendChild(bw);
-  container.appendChild(progBar);
-}
-
-function renderWeeksGrid() {
-  const grid = $('weeks-grid'); grid.innerHTML = '';
-  if (!hasPlanContent()) {
-    grid.innerHTML = emptyNotice('Nenhum plano carregado',
-      'Importe um .md programático para ver o mapa de semanas.');
-    return;
-  }
-  const cw = getCurrentWeek();
-  ACTIVE_PLAN.allWeeks.forEach(week => {
-    const prog = getWeekProgress(week);
-    const isCurrent = cw === week.id, isDone = prog.pct === 100, isLocked = cw && week.id > cw;
-    let cls = 'week-tile';
-    if (isCurrent) cls += ' current'; else if (isDone) cls += ' done'; else if (isLocked) cls += ' locked';
-    const tile = el('div', { className: cls });
-    tile.appendChild(el('div', { className: 'wt-week-num' }, 'Semana ' + week.id));
-    tile.appendChild(el('div', { className: 'wt-title' }, week.title));
-    const st = el('div', { className: 'wt-status' });
-    st.textContent = isDone ? '✅' : isCurrent ? '📍' : isLocked ? '🔒' : '○';
-    tile.appendChild(st);
-    const pb = el('div', { className: 'wt-progress-bar' });
-    pb.appendChild(el('div', { className: 'wt-progress-fill', style: `width:${prog.pct}%` }));
-    tile.appendChild(pb);
-    if (!isLocked) tile.addEventListener('click', () => openWeekModal(week.id));
-    grid.appendChild(tile);
-  });
 }
 
 // ════════════════════════════════════════════════════════
@@ -738,7 +678,21 @@ function renderPlanView() {
       'Importe um .md com <code>## FASE N — Dias...</code> em <strong>📂 Importar</strong>.');
     return;
   }
+
+  // Mapa de semanas com desbloqueio sequencial:
+  // a primeira semana começa liberada e a próxima só abre
+  // quando a anterior for concluída (100%).
   const cw = getCurrentWeek();
+  const lockedIds = new Set();
+  let prevDone = true;
+  ACTIVE_PLAN.allWeeks.forEach(w => {
+    if (!prevDone) lockedIds.add(w.id);
+    prevDone = getWeekProgress(w).pct === 100;
+  });
+
+  container.appendChild(el('h2', { className: 'section-title' },
+    el('span', { className: 'section-icon' }, '🗺️'), ' Mapa de Semanas'));
+
   ACTIVE_PLAN.phases.forEach(phase => {
     const phasePct = getPhaseProgress(phase);
     const phaseBlock = el('div', { className: `phase-block phase-${phase.id}` });
@@ -751,36 +705,29 @@ function renderPlanView() {
     phHeader.appendChild(el('div', { className: 'phase-progress-text' }, phasePct + '%'));
     phaseBlock.appendChild(phHeader);
 
-    const weeksContainer = el('div', { className: 'phase-weeks' });
+    const map = el('div', { className: 'weeks-grid phase-weeks-map' });
     phase.weeks.forEach(week => {
       const prog = getWeekProgress(week);
-      const isCurrent = cw === week.id, isDone = prog.pct === 100;
-      let rc = 'week-row';
-      if (isCurrent) rc += ' current-row'; else if (isDone) rc += ' done-row';
-      const row = el('div', { className: rc });
-
-      const weekCol = el('div', { className: 'wr-week-col' });
-      weekCol.appendChild(el('div', { className: 'wr-week-num' }, 'Semana ' + week.id));
-      weekCol.appendChild(el('div', { className: 'wr-week-status' }, isDone ? '✅' : isCurrent ? '📍' : '○'));
-      row.appendChild(weekCol);
-
-      const contentCol = el('div', { className: 'wr-content-col' });
-      contentCol.appendChild(el('div', { className: 'wr-title' }, week.title + ' — ' + week.days));
-      contentCol.appendChild(el('div', { className: 'wr-desc' }, week.tasks.map(t => '• ' + t.text).join('\n')));
-      const db = el('div', { className: 'wr-deliverable' });
-      db.innerHTML = `${week.deliverable.icon} Entregável: ${week.deliverable.text}`;
-      contentCol.appendChild(db);
-      row.appendChild(contentCol);
-
-      const actCol = el('div', { className: 'wr-actions-col' });
-      const btn = el('button', { className: 'btn btn-secondary btn-sm' }, '👁 Ver');
-      btn.addEventListener('click', e => { e.stopPropagation(); openWeekModal(week.id); });
-      actCol.appendChild(btn);
-      row.appendChild(actCol);
-      row.addEventListener('click', () => openWeekModal(week.id));
-      weeksContainer.appendChild(row);
+      const isDone = prog.pct === 100;
+      const isCurrent = cw === week.id;
+      const isLocked = lockedIds.has(week.id) && !isDone;
+      let cls = 'week-tile';
+      if (isDone) cls += ' done';
+      else if (isCurrent && !isLocked) cls += ' current';
+      else if (isLocked) cls += ' locked';
+      const tile = el('div', { className: cls });
+      tile.appendChild(el('div', { className: 'wt-week-num' }, 'Semana ' + week.id));
+      tile.appendChild(el('div', { className: 'wt-title' }, week.title));
+      const st = el('div', { className: 'wt-status' });
+      st.textContent = isDone ? '✅' : isCurrent && !isLocked ? '📍' : isLocked ? '🔒' : '○';
+      tile.appendChild(st);
+      const pb = el('div', { className: 'wt-progress-bar' });
+      pb.appendChild(el('div', { className: 'wt-progress-fill', style: `width:${prog.pct}%` }));
+      tile.appendChild(pb);
+      if (!isLocked) tile.addEventListener('click', () => openWeekModal(week.id));
+      map.appendChild(tile);
     });
-    phaseBlock.appendChild(weeksContainer);
+    phaseBlock.appendChild(map);
     container.appendChild(phaseBlock);
   });
 }
@@ -811,40 +758,21 @@ function renderNotesView() {
 //  RENDER: CHALLENGES VIEW
 // ════════════════════════════════════════════════════════
 function renderChallengesView() {
-  // XP Stats (total = desafios + plano)
   const earnedXP = getTotalXP();
   const completed = getCompletedChallengesCount();
   const streak = getStreak();
-  const curLevel = getCurrentXPLevel(earnedXP);
-  const nextLevel = getNextXPLevel(earnedXP);
+  const xpMao = getEarnedXP();
 
   $('xp-display-value').textContent = earnedXP + ' XP';
-  $('xp-level-num').textContent = curLevel.level;
-  $('xp-hero-title').textContent = curLevel.title;
-  $('xp-completed-count').textContent = completed;
-  $('xp-total-earned').textContent = earnedXP;
-  $('xp-streak').textContent = streak;
-
-  if (nextLevel) {
-    const pct = Math.round(((earnedXP - curLevel.minXP) / (nextLevel.minXP - curLevel.minXP)) * 100);
-    $('xp-hero-sub').textContent = `${earnedXP - curLevel.minXP} / ${nextLevel.minXP - curLevel.minXP} XP para ${nextLevel.title}`;
-    $('xp-bar-fill').style.width = pct + '%';
-    // conic-gradient for level ring
-    $('xp-level-ring').style.background =
-      `conic-gradient(var(--amber) 0deg, var(--rose) ${pct * 3.6}deg, var(--bg-hover) ${pct * 3.6}deg)`;
-  } else {
-    $('xp-hero-sub').textContent = '🏆 Nível máximo atingido!';
-    $('xp-bar-fill').style.width = '100%';
-  }
+  $('challenges-count').textContent = completed;
+  $('challenges-streak').textContent = streak;
+  $('challenges-xp').textContent = xpMao;
 
   // Nav badge
   const badge = $('nav-xp-badge');
   badge.textContent = earnedXP + ' XP';
   badge.classList.toggle('visible', earnedXP > 0);
 
-  // Badges (também aparece aqui na view de desafios)
-  renderBadges('badges-grid-challenges');
-  renderChallengeBadges('challenge-badges-challenges');
   syncCatLevel();
 
   // Method steps (only build once)
@@ -1423,12 +1351,15 @@ function showView(viewId) {
 
 function updateStats() {
   // Lightweight update without full re-render
-  const totalPct = getTotalProgress();
-  if ($('stat-total-pct')) { $('stat-total-pct').textContent = totalPct + '%'; setBar('bar-total', totalPct); }
-  ACTIVE_PLAN.phases.forEach((phase, i) => {
-    const pct = getPhaseProgress(phase); const n = i + 1;
-    if ($(`stat-p${n}-pct`)) { $(`stat-p${n}-pct`).textContent = pct + '%'; setBar(`bar-p${n}`, pct); }
-  });
+  const dash = document.getElementById('view-dashboard');
+  const isActive = dash && dash.classList && dash.classList.contains
+    ? dash.classList.contains('active') : false;
+  if (isActive) {
+    renderXPHero();
+    renderBadges('badges-grid-dashboard');
+    renderChallengeBadges('challenge-badges-dashboard');
+  }
+  syncCatLevel();
 }
 
 function refreshAll() {

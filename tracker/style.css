@@ -527,6 +527,8 @@ body {
 }
 .week-tile.done { border-color: var(--emerald); background: var(--emerald-dim); }
 .week-tile.locked { opacity: 0.4; cursor: default; }
+.week-tile.locked:hover { transform: none; box-shadow: none; border-color: var(--border); }
+.phase-weeks-map { margin-top: 14px; }
 
 .wt-week-num {
   font-size: 10px;
@@ -846,6 +848,9 @@ body {
   border-radius: var(--radius-lg);
   width: 90%;
   max-width: 480px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
   box-shadow: 0 20px 60px rgba(0,0,0,0.5), var(--shadow-glow);
   animation: slideUp 0.25s cubic-bezier(0.4,0,0.2,1);
 }
@@ -860,6 +865,7 @@ body {
   justify-content: space-between;
   padding: 20px 24px;
   border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
 }
 .modal-header h2 { font-size: 18px; font-weight: 700; }
 .modal-close {
@@ -873,13 +879,21 @@ body {
   transition: all var(--transition);
 }
 .modal-close:hover { background: var(--bg-hover); color: var(--text-primary); }
-.modal-body { padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+.modal-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+  flex: 1;
+}
 .modal-footer {
   padding: 16px 24px;
   border-top: 1px solid var(--border);
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+  flex-shrink: 0;
 }
 
 /* ─── Form elements ─── */
@@ -1032,6 +1046,35 @@ body {
   transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
   box-shadow: 0 0 8px var(--amber-glow-md);
 }
+
+/* Dashboard hero: carinha do gato em destaque */
+.dashboard-hero { margin-bottom: 20px; }
+.dashboard-hero .xp-level-ring { width: 132px; height: 132px; }
+.dashboard-hero .xp-cat { width: 104px; height: 96px; }
+.dashboard-hero .xp-hero-title { font-size: 24px; }
+.dashboard-hero .xp-stats { gap: 36px; }
+.dashboard-hero .xp-stat span { font-size: 30px; }
+
+/* Faixa compacta de resumo (view Desafios) */
+.challenges-stats {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.challenge-stat {
+  flex: 1;
+  min-width: 130px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.challenge-stat span { font-size: 24px; font-weight: 800; color: var(--text-primary); line-height: 1; }
+.challenge-stat small { font-size: 11px; color: var(--text-muted); font-weight: 500; }
 
 /* Method card */
 .method-card {

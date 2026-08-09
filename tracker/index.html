@@ -95,62 +95,28 @@
         <div class="header-date" id="header-date">—</div>
       </header>
 
-      <!-- Progress Cards -->
-      <div class="stats-grid">
-        <div class="stat-card stat-total">
-          <div class="stat-icon">🎯</div>
-          <div class="stat-info">
-            <span class="stat-value" id="stat-total-pct">0%</span>
-            <span class="stat-label">Progresso Total</span>
+      <!-- Cat Hero + XP -->
+      <div class="xp-hero dashboard-hero" id="xp-hero">
+        <div class="xp-hero-left">
+          <div class="xp-level-ring" id="xp-level-ring">
+            <div class="xp-cat dashboard-cat" id="xp-cat"></div>
+            <span class="xp-level-num" id="xp-level-num">1</span>
           </div>
-          <div class="stat-bar-wrap">
-            <div class="stat-bar" id="bar-total"></div>
-          </div>
-        </div>
-        <div class="stat-card stat-phase1">
-          <div class="stat-icon">🧱</div>
-          <div class="stat-info">
-            <span class="stat-value" id="stat-p1-pct">0%</span>
-            <span class="stat-label">Fase 1 — Fundamentos</span>
-          </div>
-          <div class="stat-bar-wrap">
-            <div class="stat-bar" id="bar-p1"></div>
+          <div class="xp-hero-info">
+            <div class="xp-hero-title" id="xp-hero-title">Iniciante</div>
+            <div class="xp-hero-sub" id="xp-hero-sub">0 / 0 XP para o próximo nível</div>
           </div>
         </div>
-        <div class="stat-card stat-phase2">
-          <div class="stat-icon">🌐</div>
-          <div class="stat-info">
-            <span class="stat-value" id="stat-p2-pct">0%</span>
-            <span class="stat-label">Fase 2 — Distribuído</span>
+        <div class="xp-hero-right">
+          <div class="xp-stats">
+            <div class="xp-stat"><span id="xp-total">0</span><small>XP Geral</small></div>
+            <div class="xp-stat"><span id="xp-desafios">0</span><small>XP Mão na Massa</small></div>
+            <div class="xp-stat"><span id="xp-plano">0</span><small>XP Plano</small></div>
           </div>
-          <div class="stat-bar-wrap">
-            <div class="stat-bar" id="bar-p2"></div>
-          </div>
-        </div>
-        <div class="stat-card stat-phase3">
-          <div class="stat-icon">🏆</div>
-          <div class="stat-info">
-            <span class="stat-value" id="stat-p3-pct">0%</span>
-            <span class="stat-label">Fase 3 — System Design</span>
-          </div>
-          <div class="stat-bar-wrap">
-            <div class="stat-bar" id="bar-p3"></div>
+          <div class="xp-bar-wrap">
+            <div class="xp-bar-fill" id="xp-bar-fill"></div>
           </div>
         </div>
-      </div>
-
-      <!-- Current Week highlight -->
-      <div class="current-week-section">
-        <h2 class="section-title"><span class="section-icon">📍</span> Semana Atual</h2>
-        <div class="current-week-card" id="current-week-card">
-          <div class="cw-loading">Configure a data de início para ver a semana atual ⚙️</div>
-        </div>
-      </div>
-
-      <!-- Timeline Mini -->
-      <div class="timeline-section">
-        <h2 class="section-title"><span class="section-icon">🗺️</span> Mapa de Semanas</h2>
-        <div class="weeks-grid" id="weeks-grid"></div>
       </div>
 
       <!-- Badges / Conquistas -->
@@ -218,28 +184,11 @@ Use [[links]] para conectar assuntos no Obsidian." disabled></textarea>
         </div>
       </header>
 
-      <!-- XP + Progress Bar -->
-      <div class="xp-hero" id="xp-hero">
-        <div class="xp-hero-left">
-          <div class="xp-level-ring" id="xp-level-ring">
-            <div class="xp-cat" id="xp-cat"></div>
-            <span class="xp-level-num" id="xp-level-num">1</span>
-          </div>
-          <div class="xp-hero-info">
-            <div class="xp-hero-title" id="xp-hero-title">Iniciante</div>
-            <div class="xp-hero-sub" id="xp-hero-sub">0 / 0 XP para o próximo nível</div>
-          </div>
-        </div>
-        <div class="xp-hero-right">
-          <div class="xp-stats">
-            <div class="xp-stat"><span id="xp-completed-count">0</span><small>Concluídos</small></div>
-            <div class="xp-stat"><span id="xp-total-earned">0</span><small>XP Total</small></div>
-            <div class="xp-stat"><span id="xp-streak">0</span><small>Streak 🔥</small></div>
-          </div>
-          <div class="xp-bar-wrap">
-            <div class="xp-bar-fill" id="xp-bar-fill"></div>
-          </div>
-        </div>
+      <!-- Resumo rápido -->
+      <div class="challenges-stats">
+        <div class="challenge-stat"><span id="challenges-count">0</span><small>Concluídos</small></div>
+        <div class="challenge-stat"><span id="challenges-streak">0</span><small>Streak 🔥</small></div>
+        <div class="challenge-stat"><span id="challenges-xp">0</span><small>XP Mão na Massa</small></div>
       </div>
 
       <!-- Method Card -->
@@ -254,13 +203,6 @@ Use [[links]] para conectar assuntos no Obsidian." disabled></textarea>
 
       <!-- Challenges by Level -->
       <div class="challenges-levels" id="challenges-levels"></div>
-
-      <!-- Badges / Conquistas -->
-      <div class="badges-section">
-        <h2 class="section-title"><span class="section-icon">🏅</span> Conquistas</h2>
-        <div class="badges-container" id="badges-grid-challenges"></div>
-        <div class="challenge-badges-container" id="challenge-badges-challenges"></div>
-      </div>
 
     </section>
 
