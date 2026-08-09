@@ -1026,11 +1026,17 @@ function openChallengeModal(challengeId) {
   doneBtn.textContent = cs.done ? '✅ Concluído! Remover ✓' : '✅ Marcar como Concluído (+' + challenge.xp + ' XP)';
   doneBtn.className = cs.done ? 'btn btn-done' : 'btn btn-primary';
 
-  // Se o desafio possuir tasks atômicas, só permitir concluir quando 100% delas estiverem marcadas.
-  const allTasksDone = challenge.tasks && challenge.tasks.length ? (tprog.pct === 100) : true;
+  // Se o desafio possuir tasks atômicas, calcular progresso e só bloquear conclusão por tarefas opcionais.
+  const tprog = getChallengeTasksProgress(challenge);
+  // Identifica tasks opcionais por título (ex.: "Diferenciais" ou marca "Opcional").
+  const requiredTasks = (challenge.tasks || []).filter(t => !/opcional|diferencial/i.test(t.title));
+  const cs2 = getChallengeState(challengeId);
+  const requiredAllDone = requiredTasks.length ? requiredTasks.every(t => cs2.tasks && cs2.tasks[t.key]) : true;
+  // allTasksDone refere-se apenas às obrigatórias; tarefas opcionais continuam a contar XP, mas não bloqueiam conclusão.
+  const allTasksDone = requiredAllDone;
   doneBtn.disabled = !allTasksDone;
   if (!allTasksDone) {
-    doneBtn.setAttribute('title', 'Complete todas as tasks atômicas antes de concluir (ganhe XP a cada task).');
+    doneBtn.setAttribute('title', 'Complete todas as tasks obrigatórias antes de concluir (tarefas opcionais não bloqueiam).');
   } else {
     doneBtn.removeAttribute('title');
   }
@@ -1069,9 +1075,12 @@ function toggleChallengeDone() {
     // Antes de aceitar conclusão, garantir que todas as tasks atômicas estão completas
     const challengeObj = CHALLENGES_DATA.allChallenges.find(c => c.id === activeChallengeId);
     if (challengeObj && challengeObj.tasks && challengeObj.tasks.length) {
-      const tprog2 = getChallengeTasksProgress(challengeObj);
-      if (tprog2.pct !== 100) {
-        showToast('Complete todas as tasks atômicas antes de concluir!');
+      // Verifica apenas as tasks obrigatórias — tarefas opcionais não bloqueiam a conclusão
+      const required = (challengeObj.tasks || []).filter(t => !/opcional|diferencial/i.test(t.title));
+      const csState = getChallengeState(activeChallengeId);
+      const requiredAll = required.length ? required.every(t => csState.tasks && csState.tasks[t.key]) : true;
+      if (!requiredAll) {
+        showToast('Complete todas as tasks obrigatórias antes de concluir!');
         return;
       }
     }
