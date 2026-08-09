@@ -17,6 +17,9 @@ let state = {
   notes: {},
   challenges: {},   // { challengeId: { done: bool, attempts: [{date, text}], tasks: {taskKey: bool} } }
   activePlanId: null,
+  activityDates: [], // ['YYYY-MM-DD', ...] dias com atividade (plano ou desafios) → streak
+  badges: [],        // [badgeId, ...] conquistas desbloqueadas
+  challengeBadges: [], // [{ challengeId, num, title, xp, date, skin }] badge de gato por desafio concluído
 };
 
 // Cache do servidor: { content: <objeto importado|null>, states: { <key>: <estado> } }
@@ -191,14 +194,56 @@ function getChallengeTasksProgress(challenge) {
 function toggleChallengeTask(challengeId, taskKey) {
   const cs = getChallengeState(challengeId);
   cs.tasks = cs.tasks || {};
+  const was = !!cs.tasks[taskKey];
   cs.tasks[taskKey] = !cs.tasks[taskKey];
   if (!state.challenges[challengeId]) state.challenges[challengeId] = cs;
   saveState();
+  if (cs.tasks[taskKey] && !was) {
+    const c = CHALLENGES_DATA.allChallenges.find(c => c.id === challengeId);
+    const t = (c && c.tasks) ? c.tasks.find(t => t.key === taskKey) : null;
+    if (t) showToast(`+25 XP · ${t.title} ⚡`);
+  }
+  checkBadges();
 }
 function getEarnedXP() {
-  return CHALLENGES_DATA.allChallenges
-    .filter(c => getChallengeState(c.id).done)
-    .reduce((s, c) => s + c.xp, 0);
+  let xp = 0;
+  CHALLENGES_DATA.allChallenges.forEach(c => {
+    const cs = getChallengeState(c.id);
+    // XP das tasks atômicas concluídas (+25 cada)
+    (c.tasks || []).forEach(t => { if (cs.tasks && cs.tasks[t.key]) xp += 25; });
+    // XP de conclusão do desafio
+    if (cs.done) xp += c.xp;
+  });
+  return xp;
+}
+
+// ─────────────────────────────────────────────
+//  XP DO PLANO PROGRAMÁTICO
+//  O plano também dá XP (mesmo nível dos desafios):
+//    leitura +10 · prática +20 · entregável +50
+//    semana completa +100 (bônus) · fase completa +300 (bônus)
+// ─────────────────────────────────────────────
+const PLAN_XP = { leitura: 10, pratica: 20, deliverable: 50, weekBonus: 100, phaseBonus: 300 };
+
+function getPlanXP() {
+  let xp = 0;
+  if (!hasPlanContent()) return 0;
+  ACTIVE_PLAN.allWeeks.forEach(w => {
+    w.tasks.forEach(t => {
+      if (state.tasks[t.id]) xp += (t.type === 'pratica' ? PLAN_XP.pratica : PLAN_XP.leitura);
+    });
+    if (state.deliverables[w.deliverable.id]) xp += PLAN_XP.deliverable;
+    if (getWeekProgress(w).pct === 100) xp += PLAN_XP.weekBonus;
+  });
+  ACTIVE_PLAN.phases.forEach(ph => {
+    const allDone = ph.weeks.length > 0 && ph.weeks.every(w => getWeekProgress(w).pct === 100);
+    if (allDone) xp += PLAN_XP.phaseBonus;
+  });
+  return xp;
+}
+
+function getTotalXP() {
+  return getEarnedXP() + getPlanXP();
 }
 function getCompletedChallengesCount() {
   return CHALLENGES_DATA.allChallenges.filter(c => getChallengeState(c.id).done).length;
@@ -227,6 +272,99 @@ function getCurrentXPLevel(xp) {
 }
 function getNextXPLevel(xp) {
   return XP_LEVELS.find(l => l.minXP > xp) || null;
+}
+
+// ════════════════════════════════════════════════════════
+//  BADGES / CONQUISTAS
+//  Vale para plano programático E desafios mão na massa.
+// ════════════════════════════════════════════════════════
+const BADGES = [
+  { id: 'primeira-tarefa',    icon: '🚀', name: 'Primeira Tarefa',      desc: 'Conclua a primeira tarefa do plano.',        check: () => Object.keys(state.tasks).some(id => state.tasks[id]) },
+  { id: 'primeira-semana',    icon: '📅', name: 'Primeira Semana',      desc: 'Conclua 100% de uma semana.',                 check: () => ACTIVE_PLAN.allWeeks.some(w => getWeekProgress(w).pct === 100) },
+  { id: 'primeira-fase',      icon: '🧱', name: 'Fase Concluída',       desc: 'Conclua uma fase inteira do plano.',          check: () => ACTIVE_PLAN.phases.some(ph => ph.weeks.length > 0 && ph.weeks.every(w => getWeekProgress(w).pct === 100)) },
+  { id: 'plano-completo',     icon: '🏆', name: 'Plano Completo',       desc: 'Conclua 100% do plano programático.',         check: () => hasPlanContent() && getTotalProgress() === 100 },
+  { id: 'primeiro-desafio',   icon: '⚔️', name: 'Primeiro Desafio',     desc: 'Conclua o primeiro desafio.',                 check: () => getCompletedChallengesCount() > 0 },
+  { id: 'task-atomicas',      icon: '🧩', name: 'Tasks Atômicas',       desc: 'Conclua todas as tasks de um desafio.',       check: () => CHALLENGES_DATA.allChallenges.some(c => getChallengeTasksProgress(c).pct === 100) },
+  { id: 'desafio-final',      icon: '👑', name: 'Desafio Final',        desc: 'Conclua TODOS os desafios.',                  check: () => CHALLENGES_DATA.allChallenges.length > 0 && getCompletedChallengesCount() === CHALLENGES_DATA.allChallenges.length },
+  { id: 'streak-3',           icon: '🔥', name: 'Ritmo 3 Dias',         desc: 'Fique 3 dias seguidos ativo.',                check: () => getStreak() >= 3 },
+  { id: 'streak-7',           icon: '⚡', name: 'Ritmo 7 Dias',         desc: 'Fique 7 dias seguidos ativo.',                check: () => getStreak() >= 7 },
+  { id: 'streak-30',          icon: '🌋', name: 'Ritmo 30 Dias',        desc: 'Fique 30 dias seguidos ativo.',               check: () => getStreak() >= 30 },
+  { id: 'xp-500',             icon: '💎', name: '500 XP',               desc: 'Acumule 500 XP no total.',                    check: () => getTotalXP() >= 500 },
+  { id: 'xp-1500',            icon: '💠', name: '1500 XP',              desc: 'Acumule 1500 XP no total.',                   check: () => getTotalXP() >= 1500 },
+];
+
+function isBadgeUnlocked(id) { return (state.badges || []).includes(id); }
+
+// Verifica quais badges acabaram de ser desbloqueadas; mostra toast e persiste.
+function checkBadges() {
+  const unlocked = state.badges || [];
+  let changed = false;
+  BADGES.forEach(b => {
+    let ok = false;
+    try { ok = b.check(); } catch (e) {}
+    if (ok && !unlocked.includes(b.id)) {
+      unlocked.push(b.id);
+      changed = true;
+      setTimeout(() => showToast(`${b.icon} Badge desbloqueado: ${b.name}!`), 150);
+    }
+  });
+  if (changed) { state.badges = unlocked; saveState(); }
+}
+
+function renderBadges(containerId) {
+  const c = $(containerId);
+  if (!c) return;
+  const unlocked = BADGES.filter(b => isBadgeUnlocked(b.id));
+  c.innerHTML = '';
+  if (unlocked.length) {
+    const wrap = el('div', { className: 'badges-grid' });
+    unlocked.forEach(b => {
+      const card = el('div', { className: 'badge-card' }, `${b.icon} ${b.name}`);
+      wrap.appendChild(card);
+    });
+    c.appendChild(wrap);
+    c.appendChild(el('div', { className: 'badges-count' }, `🏅 ${unlocked.length} de ${BADGES.length} conquistas`));
+  } else {
+    c.appendChild(el('div', { className: 'badges-empty' }, '🏅 Conquiste badges concluindo tarefas, semanas, fases e desafios!'));
+  }
+}
+
+// Badge de desafio: gatinho pixel art + nome do desafio concluído.
+// Acumulam para sempre (cada desafio finalizado vira um troféu).
+function awardChallengeBadge(challenge) {
+  state.challengeBadges = state.challengeBadges || [];
+  const idx = state.challengeBadges.findIndex(b => b.challengeId === challenge.id);
+  if (idx !== -1) return;
+  state.challengeBadges.push({
+    challengeId: challenge.id,
+    num: challenge.num,
+    title: challenge.title,
+    xp: challenge.xp,
+    date: new Date().toISOString().split('T')[0],
+    skin: getCurrentXPLevel(getTotalXP()).level,
+  });
+}
+
+function renderChallengeBadges(containerId) {
+  const c = $(containerId);
+  if (!c) return;
+  const badges = state.challengeBadges || [];
+  c.innerHTML = '';
+  if (!badges.length) {
+    c.appendChild(el('div', { className: 'challenge-badges-empty' }, '🐾 Conclua desafios para colecionar badges de gatinho com o nome de cada um!'));
+    return;
+  }
+  const wrap = el('div', { className: 'challenge-badges-grid' });
+  badges.forEach(b => {
+    const card = el('div', { className: 'challenge-badge-card' });
+    card.appendChild(el('div', { className: 'challenge-badge-cat' }, catSVG(catForLevel(b.skin), 'cat-tier-' + b.skin)));
+    const info = el('div', { className: 'challenge-badge-info' });
+    info.appendChild(el('div', { className: 'challenge-badge-title' }, b.title));
+    info.appendChild(el('div', { className: 'challenge-badge-meta' }, `#${String(b.num).padStart(2,'0')} · +${b.xp} XP · ${formatDate(b.date)}`));
+    card.appendChild(info);
+    wrap.appendChild(card);
+  });
+  c.appendChild(wrap);
 }
 
 // ════════════════════════════════════════════════════════
@@ -385,6 +523,8 @@ function renderDashboard() {
 
   renderCurrentWeekCard();
   renderWeeksGrid();
+  renderBadges('badges-grid-dashboard');
+  renderChallengeBadges('challenge-badges-dashboard');
 }
 
 function renderCurrentWeekCard() {
@@ -551,8 +691,8 @@ function renderNotesView() {
 //  RENDER: CHALLENGES VIEW
 // ════════════════════════════════════════════════════════
 function renderChallengesView() {
-  // XP Stats
-  const earnedXP = getEarnedXP();
+  // XP Stats (total = desafios + plano)
+  const earnedXP = getTotalXP();
   const completed = getCompletedChallengesCount();
   const streak = getStreak();
   const curLevel = getCurrentXPLevel(earnedXP);
@@ -581,6 +721,10 @@ function renderChallengesView() {
   const badge = $('nav-xp-badge');
   badge.textContent = earnedXP + ' XP';
   badge.classList.toggle('visible', earnedXP > 0);
+
+  // Badges (também aparece aqui na view de desafios)
+  renderBadges('badges-grid-challenges');
+  renderChallengeBadges('challenge-badges-challenges');
 
   // Method steps (only build once)
   const methodSteps = $('method-steps');
@@ -847,6 +991,7 @@ function registerAttempt() {
   state.challenges[activeChallengeId].attempts.push({ date: new Date().toISOString(), text });
   saveState();
   showToast('Tentativa registrada! 🔄');
+  checkBadges();
   openChallengeModal(activeChallengeId); // re-render
 }
 
@@ -861,11 +1006,13 @@ function toggleChallengeDone() {
     const text = ($('challenge-attempt-text')?.value || '').trim();
     if (text) state.challenges[activeChallengeId].attempts.push({ date: new Date().toISOString(), text });
     const c = CHALLENGES_DATA.allChallenges.find(c => c.id === activeChallengeId);
+    awardChallengeBadge(c);
     showToast(`+${c.xp} XP! Desafio concluído! ⚡`);
   } else {
     showToast('Desafio desmarcado');
   }
   saveState();
+  checkBadges();
   openChallengeModal(activeChallengeId);
 }
 
@@ -873,8 +1020,21 @@ function toggleChallengeDone() {
 //  TOGGLE TASKS
 // ════════════════════════════════════════════════════════
 function toggleTask(id, type) {
+  const wasDone = !!state[type][id];
   state[type][id] = !state[type][id];
+  const nowDone = state[type][id];
   saveState();
+  if (nowDone && !wasDone) {
+    // Toast de XP ganho
+    if (type === 'deliverables') showToast(`+${PLAN_XP.deliverable} XP · Entregável concluído! 🎯`);
+    else if (type === 'tasks') {
+      const t = ACTIVE_PLAN.allWeeks.flatMap(w => w.tasks).find(t => t.id === id);
+      const xp = t && t.type === 'pratica' ? PLAN_XP.pratica : PLAN_XP.leitura;
+      showToast(`+${xp} XP${t && t.type === 'pratica' ? ' · Mão na massa!' : ''} ⚡`);
+    }
+  }
+  checkBadges();
+
 }
 
 // ════════════════════════════════════════════════════════
@@ -1001,7 +1161,7 @@ data_export: "${new Date().toISOString().split('T')[0]}"
 
 # 📊 Progresso — 90 Dias na Gringa
 
-> Dia **${day || '?'}** de ${ACTIVE_PLAN.totalDays} · Progresso total: **${getTotalProgress()}%** · XP: **${getEarnedXP()}**
+> Dia **${day || '?'}** de ${ACTIVE_PLAN.totalDays} · Progresso total: **${getTotalProgress()}%** · XP: **${getTotalXP()}**
 
 ## Por Fase
 
@@ -1015,7 +1175,7 @@ ${rows}
 
 ## Desafios de System Design
 
-> XP Total: **${getEarnedXP()}** / ${CHALLENGES_DATA.totalXP} · Concluídos: **${getCompletedChallengesCount()}** / ${CHALLENGES_DATA.allChallenges.length}
+> XP Total: **${getTotalXP()}** / ${CHALLENGES_DATA.totalXP + getPlanXP()} · Concluídos: **${getCompletedChallengesCount()}** / ${CHALLENGES_DATA.allChallenges.length}
 
 | # | Desafio | Status | XP |
 |---|---------|--------|-----|
