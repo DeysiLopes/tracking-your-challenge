@@ -662,12 +662,29 @@ function renderDashboard() {
 
 // Hero do Dashboard: carinha do gato em pixel art + nível + XP geral / mão na massa / plano.
 function ensureXPHeaders(viewId) {
-  // If viewId provided, update only that view's header; otherwise update all headers with totalXP.
-  if (viewId) {
-    const header = document.querySelector(`#view-${viewId} .page-header`);
-    if (!header) return;
+  if (!viewId) return;
+
+  const header = document.querySelector(`#view-${viewId} .page-header`);
+  if (!header) return;
+
+  if (viewId === 'challenges') {
+    // Challenges: update existing .xp-total-badge with earned XP only
+    const badge = header.querySelector('.xp-total-badge');
+    if (badge) {
+      const valueEl = badge.querySelector('#xp-display-value');
+      if (valueEl) valueEl.textContent = getEarnedXP() + ' XP';
+    }
+  } else if (viewId === 'plan') {
+    // Plan: update existing .xp-total-badge with plan XP only
+    const badge = header.querySelector('.xp-total-badge');
+    if (badge) {
+      const valueEl = badge.querySelector('#xp-plan-display-value');
+      if (valueEl) valueEl.textContent = getPlanXP() + ' XP';
+    }
+  } else if (viewId === 'dashboard') {
+    // Dashboard: update .page-xp or create it with total XP
     let elxp = header.querySelector('.page-xp');
-    const val = (viewId === 'challenges') ? getEarnedXP() : (viewId === 'dashboard' ? getTotalXP() : getTotalXP());
+    const val = getTotalXP();
     if (!elxp) {
       elxp = el('div', { className: 'page-xp' }, el('div', { className: 'page-xp-value' }, val + ' XP'));
       header.appendChild(elxp);
@@ -675,20 +692,7 @@ function ensureXPHeaders(viewId) {
       const v = elxp.querySelector('.page-xp-value');
       if (v) v.textContent = val + ' XP';
     }
-    return;
   }
-
-  const totalXP = getTotalXP();
-  document.querySelectorAll('.page-header').forEach(header => {
-    let elxp = header.querySelector('.page-xp');
-    if (!elxp) {
-      elxp = el('div', { className: 'page-xp' }, el('div', { className: 'page-xp-value' }, totalXP + ' XP'));
-      header.appendChild(elxp);
-    } else {
-      const v = elxp.querySelector('.page-xp-value');
-      if (v) v.textContent = totalXP + ' XP';
-    }
-  });
 }
 
 function renderXPHero() {
