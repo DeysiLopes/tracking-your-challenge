@@ -980,6 +980,7 @@ body {
   font-size: 16px;
   font-weight: 800;
   color: var(--amber);
+  animation: xp-pop 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 .xp-icon { font-size: 18px; }
 
@@ -1555,6 +1556,12 @@ body {
 }
 @keyframes confetti-fall {
   to { transform: translateY(90px) rotate(360deg); opacity: 0; }
+}
+
+@keyframes xp-pop {
+  0% { transform: scale(0.3); opacity: 0; }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
 }
 
 /* Gato dentro do anel de nível (XP) */
