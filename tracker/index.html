@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>90 Dias na Gringa — Tracker</title>
+  <meta name="description" content="Tracker pessoal de progresso do plano de 90 dias para vaga international de Senior Software Engineer." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">🛫</div>
+      <div class="logo-text">
+        <span class="logo-title" id="plan-name">90 Dias</span>
+        <span class="logo-sub" id="plan-sub">na Gringa</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="nav-item active" data-view="dashboard" id="nav-dashboard">
+        <span class="nav-icon">⚡</span>
+        <span>Dashboard</span>
+      </button>
+      <button class="nav-item" data-view="plan" id="nav-plan">
+        <span class="nav-icon">📋</span>
+        <span>Plano Semanal</span>
+      </button>
+      <button class="nav-item" data-view="notes" id="nav-notes">
+        <span class="nav-icon">📝</span>
+        <span>Minhas Notas</span>
+      </button>
+      <button class="nav-item" data-view="challenges" id="nav-challenges">
+        <span class="nav-icon">⚔️</span>
+        <span>Desafios</span>
+        <span class="nav-xp-badge" id="nav-xp-badge"></span>
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="day-counter" id="day-counter">
+        <span class="day-label">Dia</span>
+        <span class="day-number" id="current-day">—</span>
+        <span class="day-label">de <span id="total-days">90</span></span>
+      </div>
+      <button class="settings-btn" id="settings-btn" title="Configurar data de início">⚙ Config</button>
+      <button class="settings-btn" id="import-btn" title="Importar plano a partir de .md">📂 Importar</button>
+      <button class="settings-btn" id="export-btn" title="Exportar para o Obsidian">🗂️ Exportar Obsidian</button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main" id="main-content">
+
+    <!-- ════════════════════════════════
+         VIEW: WELCOME (estado vazio)
+    ════════════════════════════════ -->
+    <section class="view" id="view-welcome">
+      <div class="welcome-card">
+        <div class="welcome-icon">📂</div>
+        <h1>Bem-vindo ao seu Tracker</h1>
+        <p class="page-subtitle">O tracker começa vazio: importe seus arquivos <code>.md</code> e ele se adapta a qualquer plano (30, 60, 90 dias...).</p>
+        <div class="welcome-actions">
+          <button class="btn btn-primary" id="welcome-import-btn">📂 Importar .md</button>
+        </div>
+        <ul class="welcome-hints">
+          <li><strong>Conteúdo programático</strong> — <code>## FASE 1 — Dias 1–30: ...</code> gera fases, semanas, tarefas e entregáveis.</li>
+          <li><strong>Mão na massa</strong> — <code>## 🏦 Desafio 1 — ...</code> gera desafios gamificados (XP por nível).</li>
+        </ul>
+        <p class="welcome-note">💡 Novo upload de desafios só é permitido quando os atuais estiverem <strong>todos concluídos</strong>.</p>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════
+         VIEW: DASHBOARD
+    ════════════════════════════════ -->
+    <section class="view active" id="view-dashboard">
+
+      <header class="page-header">
+        <div>
+          <h1>Dashboard</h1>
+          <p class="page-subtitle" id="header-subtitle">Acompanhe seu progresso rumo à vaga internacional.</p>
+        </div>
+        <div class="header-date" id="header-date">—</div>
+      </header>
+
+      <!-- Progress Cards -->
+      <div class="stats-grid">
+        <div class="stat-card stat-total">
+          <div class="stat-icon">🎯</div>
+          <div class="stat-info">
+            <span class="stat-value" id="stat-total-pct">0%</span>
+            <span class="stat-label">Progresso Total</span>
+          </div>
+          <div class="stat-bar-wrap">
+            <div class="stat-bar" id="bar-total"></div>
+          </div>
+        </div>
+        <div class="stat-card stat-phase1">
+          <div class="stat-icon">🧱</div>
+          <div class="stat-info">
+            <span class="stat-value" id="stat-p1-pct">0%</span>
+            <span class="stat-label">Fase 1 — Fundamentos</span>
+          </div>
+          <div class="stat-bar-wrap">
+            <div class="stat-bar" id="bar-p1"></div>
+          </div>
+        </div>
+        <div class="stat-card stat-phase2">
+          <div class="stat-icon">🌐</div>
+          <div class="stat-info">
+            <span class="stat-value" id="stat-p2-pct">0%</span>
+            <span class="stat-label">Fase 2 — Distribuído</span>
+          </div>
+          <div class="stat-bar-wrap">
+            <div class="stat-bar" id="bar-p2"></div>
+          </div>
+        </div>
+        <div class="stat-card stat-phase3">
+          <div class="stat-icon">🏆</div>
+          <div class="stat-info">
+            <span class="stat-value" id="stat-p3-pct">0%</span>
+            <span class="stat-label">Fase 3 — System Design</span>
+          </div>
+          <div class="stat-bar-wrap">
+            <div class="stat-bar" id="bar-p3"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Current Week highlight -->
+      <div class="current-week-section">
+        <h2 class="section-title"><span class="section-icon">📍</span> Semana Atual</h2>
+        <div class="current-week-card" id="current-week-card">
+          <div class="cw-loading">Configure a data de início para ver a semana atual ⚙️</div>
+        </div>
+      </div>
+
+      <!-- Timeline Mini -->
+      <div class="timeline-section">
+        <h2 class="section-title"><span class="section-icon">🗺️</span> Mapa de Semanas</h2>
+        <div class="weeks-grid" id="weeks-grid"></div>
+      </div>
+
+    </section>
+
+    <!-- ════════════════════════════════
+         VIEW: PLANO SEMANAL
+    ════════════════════════════════ -->
+    <section class="view" id="view-plan">
+      <header class="page-header">
+        <div>
+          <h1>Plano Semanal</h1>
+          <p class="page-subtitle" id="plan-subtitle">13 semanas · 3 fases · 1 entregável por semana.</p>
+        </div>
+      </header>
+
+      <div class="plan-phases" id="plan-phases"></div>
+    </section>
+
+    <!-- ════════════════════════════════
+         VIEW: NOTAS
+    ════════════════════════════════ -->
+    <section class="view" id="view-notes">
+      <header class="page-header">
+        <div>
+          <h1>Minhas Notas</h1>
+          <p class="page-subtitle">Anotações por semana, exportáveis para o Obsidian.</p>
+        </div>
+      </header>
+
+      <div class="notes-layout">
+        <div class="notes-sidebar-list" id="notes-week-list"></div>
+        <div class="notes-editor-area">
+          <div class="notes-editor-header" id="notes-editor-header">
+            <span>Selecione uma semana ao lado →</span>
+          </div>
+          <textarea class="notes-editor" id="notes-editor" placeholder="Escreva aqui suas anotações em Markdown...
+Use [[links]] para conectar assuntos no Obsidian." disabled></textarea>
+          <div class="notes-actions">
+            <button class="btn btn-secondary" id="btn-clear-note" disabled>🗑 Limpar</button>
+            <button class="btn btn-primary" id="btn-save-note" disabled>💾 Salvar Nota</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════
+         VIEW: DESAFIOS (GAMIFIED)
+    ════════════════════════════════ -->
+    <section class="view" id="view-challenges">
+      <header class="page-header">
+        <div>
+          <h1>Desafios — Mão na Massa</h1>
+          <p class="page-subtitle" id="challenges-subtitle">Desafios de System Design em níveis. Resolva antes de pesquisar. 💪</p>
+        </div>
+        <div class="xp-total-badge" id="xp-total-display">
+          <span class="xp-icon">⚡</span>
+          <span id="xp-display-value">0 XP</span>
+        </div>
+      </header>
+
+      <!-- XP + Progress Bar -->
+      <div class="xp-hero" id="xp-hero">
+        <div class="xp-hero-left">
+          <div class="xp-level-ring" id="xp-level-ring">
+            <span class="xp-level-num" id="xp-level-num">1</span>
+          </div>
+          <div class="xp-hero-info">
+            <div class="xp-hero-title" id="xp-hero-title">Iniciante</div>
+            <div class="xp-hero-sub" id="xp-hero-sub">0 / 0 XP para o próximo nível</div>
+          </div>
+        </div>
+        <div class="xp-hero-right">
+          <div class="xp-stats">
+            <div class="xp-stat"><span id="xp-completed-count">0</span><small>Concluídos</small></div>
+            <div class="xp-stat"><span id="xp-total-earned">0</span><small>XP Total</small></div>
+            <div class="xp-stat"><span id="xp-streak">0</span><small>Streak 🔥</small></div>
+          </div>
+          <div class="xp-bar-wrap">
+            <div class="xp-bar-fill" id="xp-bar-fill"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Method Card -->
+      <div class="method-card" id="method-toggle-card">
+        <div class="method-header" id="method-toggle-btn">
+          <span>📐 Os 9 Passos — Método de Resolução</span>
+          <span class="method-arrow" id="method-arrow">▼</span>
+        </div>
+        <div class="method-steps" id="method-steps" style="display:none">
+        </div>
+      </div>
+
+      <!-- Challenges by Level -->
+      <div class="challenges-levels" id="challenges-levels"></div>
+
+    </section>
+
+    <!-- ════════════════════════════════
+         VIEW: EXPORT OBSIDIAN
+    ════════════════════════════════ -->
+    <section class="view" id="view-export">
+      <header class="page-header">
+        <div>
+          <h1>Export Obsidian</h1>
+          <p class="page-subtitle">Gere arquivos <code>.md</code> prontos para seu vault do Obsidian.</p>
+        </div>
+      </header>
+
+      <div class="export-grid">
+        <div class="export-card">
+          <div class="export-icon">📦</div>
+          <h3>Export Completo</h3>
+          <p>Exporta todos os arquivos do plano (uma nota por semana + índice) em um arquivo ZIP pronto para importar no Obsidian.</p>
+          <button class="btn btn-primary" id="btn-export-all">⬇ Baixar ZIP — Plano Completo</button>
+        </div>
+        <div class="export-card">
+          <div class="export-icon">📄</div>
+          <h3>Semana Atual</h3>
+          <p>Exporta apenas a nota da semana atual, com o progresso marcado e suas anotações.</p>
+          <button class="btn btn-secondary" id="btn-export-week">⬇ Baixar — Semana Atual</button>
+        </div>
+        <div class="export-card">
+          <div class="export-icon">📊</div>
+          <h3>Dashboard de Progresso</h3>
+          <p>Exporta um arquivo <code>00-progresso.md</code> com tabela de progresso de todas as semanas.</p>
+          <button class="btn btn-secondary" id="btn-export-progress">⬇ Baixar — Progresso</button>
+        </div>
+      </div>
+
+      <div class="export-preview">
+        <h2 class="section-title"><span class="section-icon">👁</span> Preview do Arquivo</h2>
+        <pre class="preview-code" id="export-preview-code">← Selecione uma exportação para ver o preview do arquivo .md</pre>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ════════ MODAL: Config Data Início ════════ -->
+  <div class="modal-overlay" id="modal-config" style="display:none">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>⚙ Configurações</h2>
+        <button class="modal-close" id="modal-close">✕</button>
+      </div>
+      <div class="modal-body">
+        <label class="form-label">Data de início do plano (Dia 1)</label>
+        <input type="date" class="form-input" id="input-start-date" />
+        <p class="form-hint">O tracker calculará automaticamente em qual semana você está, com base nessa data.</p>
+
+        <div class="modal-divider"></div>
+
+        <label class="form-label">📂 Importar plano a partir de um .md</label>
+        <input type="file" class="form-input" id="input-import-file" accept=".md,text/markdown" />
+        <p class="form-hint">
+          Importe um arquivo do plano e o tracker se adapta a ele (10, 30, N dias):
+        </p>
+        <ul class="form-hint" style="margin:6px 0 10px 0;padding-left:16px">
+          <li><strong>conteúdo programático</strong> → arquivos com <code>## FASE N — Dias...</code> (ex.: <code>CONSOLIDADO-90-DIAS.md</code>) — gera fases, semanas, tarefas, entregáveis</li>
+          <li><strong>mão na massa</strong> → arquivos com <code>## 🏦 Desafio N — ...</code> (ex.: <code>04-desafios-codigo-mao-na-massa.md</code>) — gera desafios com tasks atômicas</li>
+        </ul>
+        <p class="form-hint">
+          🔒 <strong>Regra:</strong> novo upload de <strong>desafios</strong> só é permitido quando os desafios atuais estiverem todos concluídos. O plano programático pode ser substituído a qualquer momento.
+        </p>
+        <button class="btn btn-secondary" id="btn-import-md">📥 Importar .md</button>
+        <span class="import-status" id="import-status"></span>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" id="btn-save-config">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════ MODAL: Challenge Detail ════════ -->
+  <div class="modal-overlay" id="modal-challenge" style="display:none">
+    <div class="modal modal-wide">
+      <div class="modal-header">
+        <div>
+          <h2 id="modal-challenge-title">Desafio</h2>
+          <div id="modal-challenge-level-badge" style="margin-top:4px"></div>
+        </div>
+        <button class="modal-close" id="modal-challenge-close">✕</button>
+      </div>
+      <div class="modal-body" id="modal-challenge-body"></div>
+      <div class="modal-footer" id="modal-challenge-footer">
+        <button class="btn btn-secondary" id="modal-challenge-attempt">📝 Registrar Tentativa</button>
+        <button class="btn btn-primary" id="modal-challenge-done">✅ Marcar como Concluído</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════ MODAL: Week Detail ════════ -->
+  <div class="modal-overlay" id="modal-week" style="display:none">
+    <div class="modal modal-wide">
+      <div class="modal-header">
+        <h2 id="modal-week-title">Semana X</h2>
+        <button class="modal-close" id="modal-week-close">✕</button>
+      </div>
+      <div class="modal-body" id="modal-week-body"></div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="modal-week-note-btn">📝 Editar Nota</button>
+        <button class="btn btn-primary" id="modal-week-done-btn">✅ Marcar como concluída</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="parser.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+# SQLite
+tracker.db
+tracker.db-journal
+*.db
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Planos/desafios pessoais (não fazem parte do repo)
+CONSOLIDADO-90-DIAS.md
+04-desafios-codigo-mao-na-massa.md
+01-*.md
+02-*.md
+03-*.md
+desafios-system-design.md
+plano-gpt.md
+03-plano-90-dias.md
+
+# Skills/notas pessoais
+skills/
+
+# Snippets/páginas temporárias geradas nos testes
+_tracker_test.html
+_browser_test.html
+_persist_test.html
+
+# Editores
+.vscode/
+.idea/
+*.swp
