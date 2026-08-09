@@ -661,7 +661,23 @@ function renderDashboard() {
 }
 
 // Hero do Dashboard: carinha do gato em pixel art + nível + XP geral / mão na massa / plano.
-function ensureXPHeaders() {
+function ensureXPHeaders(viewId) {
+  // If viewId provided, update only that view's header; otherwise update all headers with totalXP.
+  if (viewId) {
+    const header = document.querySelector(`#view-${viewId} .page-header`);
+    if (!header) return;
+    let elxp = header.querySelector('.page-xp');
+    const val = (viewId === 'challenges') ? getEarnedXP() : (viewId === 'dashboard' ? getTotalXP() : getTotalXP());
+    if (!elxp) {
+      elxp = el('div', { className: 'page-xp' }, el('div', { className: 'page-xp-value' }, val + ' XP'));
+      header.appendChild(elxp);
+    } else {
+      const v = elxp.querySelector('.page-xp-value');
+      if (v) v.textContent = val + ' XP';
+    }
+    return;
+  }
+
   const totalXP = getTotalXP();
   document.querySelectorAll('.page-header').forEach(header => {
     let elxp = header.querySelector('.page-xp');
@@ -669,8 +685,8 @@ function ensureXPHeaders() {
       elxp = el('div', { className: 'page-xp' }, el('div', { className: 'page-xp-value' }, totalXP + ' XP'));
       header.appendChild(elxp);
     } else {
-      const val = elxp.querySelector('.page-xp-value');
-      if (val) val.textContent = totalXP + ' XP';
+      const v = elxp.querySelector('.page-xp-value');
+      if (v) v.textContent = totalXP + ' XP';
     }
   });
 }
@@ -816,17 +832,17 @@ function renderNotesView() {
 //  RENDER: CHALLENGES VIEW
 // ════════════════════════════════════════════════════════
 function renderChallengesView() {
-  const earnedXP = getTotalXP();
+  const earnedXP = getEarnedXP();
   const completed = getCompletedChallengesCount();
   const streak = getStreak();
-  const xpMao = getEarnedXP();
+  const xpMao = earnedXP;
 
   $('xp-display-value').textContent = earnedXP + ' XP';
   $('challenges-count').textContent = completed;
   $('challenges-streak').textContent = streak;
   $('challenges-xp').textContent = xpMao;
 
-  // Nav badge
+  // Nav badge (show challenge-only XP)
   const badge = $('nav-xp-badge');
   badge.textContent = earnedXP + ' XP';
   badge.classList.toggle('visible', earnedXP > 0);
@@ -1502,6 +1518,9 @@ function showView(viewId) {
   if (viewId === 'notes')      renderNotesView();
   if (viewId === 'challenges') renderChallengesView();
   if (viewId === 'export')     $('export-preview-code').textContent = generateIndexMD();
+
+  // Update the small XP badge according to current view: challenges view shows only challenge XP.
+  ensureXPHeaders(viewId);
 }
 
 function updateStats() {
