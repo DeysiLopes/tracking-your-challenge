@@ -342,6 +342,24 @@ function renderBadges(containerId) {
   if (unlocked.length) {
     const wrap = el('div', { className: 'badges-grid' });
     unlocked.forEach(b => {
+      // Badge especial: Tasks Atômicas — mostrar de qual desafio as tasks foram concluídas
+      if (b.id === 'task-atomicas') {
+        const doneChallenges = (CHALLENGES_DATA && CHALLENGES_DATA.allChallenges)
+          ? CHALLENGES_DATA.allChallenges.filter(c => getChallengeTasksProgress(c).pct === 100)
+          : [];
+        const card = el('div', { className: 'badge-card' });
+        card.appendChild(el('div', { className: 'badge-name' }, `${b.icon} ${b.name}`));
+        if (doneChallenges.length) {
+          const details = el('div', { className: 'badge-detail' });
+          doneChallenges.forEach(dc => details.appendChild(el('div', { className: 'badge-challenge' }, `#${String(dc.num).padStart(2,'0')} — ${dc.title}`)));
+          card.appendChild(details);
+        } else {
+          card.appendChild(el('div', { className: 'badge-detail' }, 'Conclua todas as tasks atômicas de um desafio para ganhar este badge.'));
+        }
+        wrap.appendChild(card);
+        return;
+      }
+
       const card = el('div', { className: 'badge-card' }, `${b.icon} ${b.name}`);
       wrap.appendChild(card);
     });
