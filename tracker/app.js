@@ -380,7 +380,7 @@ function renderChallengeBadges(containerId) {
   const wrap = el('div', { className: 'challenge-badges-grid' });
   badges.forEach(b => {
     const card = el('div', { className: 'challenge-badge-card' });
-    card.appendChild(el('div', { className: 'challenge-badge-cat' }, catSVG(catForLevel(b.skin), 'cat-tier-' + b.skin)));
+    card.appendChild(el('div', { className: 'challenge-badge-cat', innerHTML: catSVG(catForLevel(b.skin), 'cat-tier-' + b.skin) }));
     const info = el('div', { className: 'challenge-badge-info' });
     info.appendChild(el('div', { className: 'challenge-badge-title' }, b.title));
     info.appendChild(el('div', { className: 'challenge-badge-meta' }, `#${String(b.num).padStart(2,'0')} · +${b.xp} XP · ${formatDate(b.date)}`));
@@ -1049,19 +1049,32 @@ function registerAttempt() {
 function toggleChallengeDone() {
   if (!activeChallengeId) return;
   if (!state.challenges[activeChallengeId]) state.challenges[activeChallengeId] = { done: false, attempts: [] };
-  const wasDone = state.challenges[activeChallengeId].done;
-  state.challenges[activeChallengeId].done = !wasDone;
+  const cs = state.challenges[activeChallengeId];
+  const wasDone = cs.done;
 
   if (!wasDone) {
-    // Add a completed attempt if text exists
     const text = ($('challenge-attempt-text')?.value || '').trim();
-    if (text) state.challenges[activeChallengeId].attempts.push({ date: new Date().toISOString(), text });
+    // Considera apenas tentativas com texto válido — evita aceitar tentativas vazias como "nota".
+    const hasPastAttempts = cs.attempts && cs.attempts.some(a => a && a.text && a.text.trim().length > 0);
+
+    if (!text && !hasPastAttempts) {
+      showToast('✏️ Escreva a solução ou nota do entregável antes de concluir!');
+      $('challenge-attempt-text')?.focus();
+      return;
+    }
+
+    if (text) {
+      cs.attempts.push({ date: new Date().toISOString(), text });
+    }
+
+    cs.done = true;
     const c = CHALLENGES_DATA.allChallenges.find(c => c.id === activeChallengeId);
     awardChallengeBadge(c);
     recordActivity();
     showToast(`+${c.xp} XP! Desafio concluído! ⚡`);
     mascotCelebrate();
   } else {
+    cs.done = false;
     showToast('Desafio desmarcado');
   }
   saveState();
