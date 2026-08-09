@@ -142,6 +142,12 @@ function challengesFinalized() {
   return all.length > 0 && all.every(c => getChallengeState(c.id).done);
 }
 
+function planFinalized() {
+  if (!hasPlanContent()) return true; // Sem plano, considera finalizado
+  const allWeeks = ACTIVE_PLAN.allWeeks || [];
+  return allWeeks.length > 0 && allWeeks.every(w => getWeekProgress(w).pct === 100);
+}
+
 function emptyNotice(title, desc) {
   return `<div class="empty-state"><div class="empty-icon">📂</div>
     <h3>${title}</h3><p>${desc}</p></div>`;
@@ -571,6 +577,15 @@ function handleImportFile(file) {
       return;
     }
     if (parsed.type === 'programatico') {
+      // GATE: plano só é aceito se o anterior estiver finalizado
+      if (hasPlanContent() && !planFinalized()) {
+        const prog = getTotalProgress();
+        setImportStatus(
+          `⛔ Upload bloqueado: finalize o plano atual (${prog}% completo) antes de importar um novo.`,
+          'error'
+        );
+        return;
+      }
       applyImportedPlan(parsed.plan);
       ensureStartDate();
       saveContent();

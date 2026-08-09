@@ -28,7 +28,7 @@ Uma plataforma web moderna (HTML5, CSS3 Vanilla, JavaScript ES6+) construída pa
 - **XP Display (Context-Aware):** Badge pequeno no canto superior da aba mostrando XP acumulado apenas do plano semanal (não inclui desafios).
 - **Modal de Detalhes da Semana:** 
   - Visualização expandida de tarefas, entregável e tags Obsidian.
-  - **Editor de Nota Integrado:** Textarea para escrever/editar notas direto no modal com botões Salvar (💾) e Limpar (🗑️).
+  - **Editor de Nota Integrado:** TextArea para escrever/editar notas direto no modal com botões Salvar (💾) e Limpar (🗑️).
   - **Validação de Conclusão:** Botão "Marcar como Concluído" fica desabilitado até que:
     - ✅ Todas as tarefas e entregável estejam checkados (100% progresso).
     - ✅ Uma nota tenha sido adicionada à semana.
@@ -104,7 +104,9 @@ Uma plataforma web moderna (HTML5, CSS3 Vanilla, JavaScript ES6+) construída pa
 - **Auto-detecção de Conteúdo:**
   - Formato *Programático*: Processa arquivos estruturados como `meu-plano-90-dias.md` (fases, semanas, dias, entregáveis) — **substitui** o plano atual.
   - Formato *Mão na Massa*: Processa desafios com tarefas atômicas e critérios de aceite — **substitui** a lista de desafios atual.
-- **Gate de desafios:** Novo upload de desafios só é permitido quando os desafios atuais estiverem **todos concluídos**; antes disso, o import é bloqueado (sem atalho — finalize o atual para liberar o próximo). O plano programático pode ser substituído a qualquer momento.
+- **Gate de Importação:** Ambos plano e desafios têm restrições de upload:
+  - **Plano programático:** Novo upload só é permitido quando o plano anterior estiver **100% completo** (todas as semanas concluídas).
+  - **Desafios mão-na-massa:** Novo upload só é permitido quando os desafios atuais estiverem **todos concluídos**.
 - **Suporte a N dias:** O total de dias (`totalDays`) é derivado do próprio arquivo importado — o tracker funciona para planos de 10, 30, 60, 90… dias, sem configuração extra.
 - **Cálculo de Prazos e Distribuição:** Distribui datas e IDs higienizados para os componentes do tracker.
 - **Estado Isolado por Plano:** Cada plano importado tem sua própria chave de estado no servidor, então importar outro plano não mistura (nem apaga) o progresso de planos anteriores.
@@ -182,8 +184,8 @@ Uma plataforma web moderna (HTML5, CSS3 Vanilla, JavaScript ES6+) construída pa
 - Novo desafio importado só é aceito quando todos os desafios atuais estiverem concluídos.
 
 ### Importação
-- Plano programático substitui o anterior (sem restrição).
-- Desafios mão-na-massa só substitui quando os atuais estão 100% concluídos.
+- **Plano programático:** Novo upload só é permitido quando o plano anterior estiver **100% completo** (todas as semanas concluídas).
+- **Desafios mão-na-massa:** Novo upload só é permitido quando os desafios atuais estiverem **todos concluídos**.
 
 ---
 
