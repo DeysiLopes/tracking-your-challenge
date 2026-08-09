@@ -940,6 +940,11 @@ let activeWeekId = null;
 let activeNoteWeekId = null;
 let activeNoteChallengeId = null;
 
+function canCompleteWeek(week) {
+  const noteText = (state.notes[week.id] || '').trim();
+  return noteText.length > 0;
+}
+
 function openWeekModal(weekId) {
   activeWeekId = weekId;
   const week = ACTIVE_PLAN.allWeeks.find(w => w.id === weekId);
@@ -983,11 +988,13 @@ function openWeekModal(weekId) {
     const v = ($('modal-week-note-text').value || '').trim();
     if (!v) { showToast('Escreva algo antes de salvar! ✏️'); return; }
     state.notes[weekId] = v; saveState(); renderNotesView(); showToast('Nota salva! 💾');
+    openWeekModal(weekId); // Refresh button state
   } }, '💾 Salvar Nota');
   const clearNoteBtn = el('button', { className: 'btn btn-secondary', onClick: () => {
     $('modal-week-note-text').value = '';
     state.notes[weekId] = '';
     saveState(); renderNotesView(); showToast('Nota apagada 🗑️');
+    openWeekModal(weekId); // Refresh button state
   } }, '🗑 Limpar Nota');
   noteBtns.appendChild(saveNoteBtn); noteBtns.appendChild(clearNoteBtn);
   body.appendChild(noteBtns);
@@ -1002,9 +1009,24 @@ function openWeekModal(weekId) {
   body.appendChild(tw);
 
   const prog = getWeekProgress(week);
+  const canComplete = canCompleteWeek(week);
   const doneBtn = $('modal-week-done-btn');
-  doneBtn.textContent = prog.pct === 100 ? '✅ Semana Concluída!' : '✅ Marcar tudo como concluído';
-  doneBtn.className = prog.pct === 100 ? 'btn btn-done' : 'btn btn-primary';
+  
+  if (prog.pct === 100 && canComplete) {
+    doneBtn.textContent = '✅ Semana Concluída!';
+    doneBtn.className = 'btn btn-done';
+    doneBtn.disabled = false;
+    doneBtn.title = '';
+  } else {
+    doneBtn.textContent = '✅ Marcar tudo como concluído';
+    doneBtn.className = 'btn btn-primary';
+    const reasons = [];
+    if (prog.pct < 100) reasons.push('Complete todas as tarefas');
+    if (!canComplete) reasons.push('Adicione uma nota');
+    doneBtn.disabled = true;
+    doneBtn.title = reasons.join(' e ');
+  }
+  
   $('modal-week').style.display = 'flex';
 }
 
