@@ -38,6 +38,7 @@ function initTheme() {
 
 // Cache do servidor: { content: <objeto importado|null>, states: { <key>: <estado> } }
 let serverData = { content: null, states: {} };
+let serverOk = false; // true quando /api/data respondeu (servidor é fonte da verdade)
 
 async function apiFetch(path, opts) {
   const res = await fetch(path, opts);
@@ -49,6 +50,7 @@ async function loadAllFromServer() {
   try {
     serverData = await apiFetch('/api/data');
     serverData.states = serverData.states || {};
+    serverOk = true;
   } catch (e) {
     console.warn('Servidor indisponível; usando localStorage', e);
   }
@@ -74,10 +76,12 @@ function getStateKey() {
 async function loadState() {
   try {
     const key = getStateKey();
-    const srv = serverData.states && serverData.states[key];
-    const raw = srv != null ? srv : localStorage.getItem(key);
+    const srv = serverOk && serverData.states ? serverData.states[key] : null;
+    const raw = srv != null ? srv : (!serverOk ? localStorage.getItem(key) : null);
     const parsed = parseStateRaw(raw);
     if (parsed) state = { ...state, ...parsed };
+    // Servidor disponível sem estado p/ este plano → limpa espelho local (reset)
+    if (serverOk && raw == null) { try { localStorage.removeItem(key); } catch (e) {} }
   } catch(e) { console.warn('Failed to load state', e); }
 }
 function saveState() {
@@ -117,9 +121,12 @@ function saveContent() {
 async function restoreContent() {
   try {
     let c = serverData.content;
-    if (!c) {
+    if (!c && !serverOk) {
       const raw = localStorage.getItem(CONTENT_KEY);
       if (raw) c = JSON.parse(raw);
+    } else if (serverOk) {
+      // Servidor é a fonte da verdade: se veio vazio, remove o espelho local
+      try { if (c == null) localStorage.removeItem(CONTENT_KEY); } catch (e) {}
     }
     if (!c) return;
     if (c.plan && c.plan.id && Array.isArray(c.plan.phases)) setActivePlan(c.plan);
@@ -500,8 +507,8 @@ function applyImportedPlan(plan) {
   setActivePlan(plan);
   const key = getStateKey();
   try {
-    const srv = serverData.states && serverData.states[key];
-    const raw = srv != null ? srv : localStorage.getItem(key);
+    const srv = serverOk && serverData.states ? serverData.states[key] : null;
+    const raw = srv != null ? srv : (!serverOk ? localStorage.getItem(key) : null);
     state = { ...state, ...(parseStateRaw(raw) || null), activePlanId: plan.id };
   } catch(e) {
     state = { ...state, tasks: {}, deliverables: {}, notes: {}, challenges: {}, activePlanId: plan.id };
@@ -515,6 +522,14 @@ function applyImportedPlan(plan) {
 function applyImportedChallenges(data) {
   setChallengesData(data);
   CHALLENGES_DATA.source = (data && data.source) || null;
+}
+
+// Define o Dia 1 automaticamente: se nenhuma data de início foi
+// configurada, usa a data do upload (hoje). Só aplica na primeira vez.
+function ensureStartDate() {
+  if (state.startDate) return;
+  state.startDate = new Date().toISOString().slice(0, 10);
+  saveState();
 }
 
 // ════════════════════════════════════════════════════════
@@ -536,25 +551,23 @@ function handleImportFile(file) {
     }
     if (parsed.type === 'programatico') {
       applyImportedPlan(parsed.plan);
+      ensureStartDate();
       saveContent();
       const nWeeks = parsed.plan.phases.reduce((s, p) => s + (p.weeks || []).length, 0);
       setImportStatus(`✅ Plano importado de ${file.name}: ${parsed.plan.totalDays} dias, ${nWeeks} semana(s).`, 'ok');
     } else {
-      // GATE: só permite novo upload de desafios se o atual estiver finalizado
+      // GATE estrito: só permite novo upload de desafios se o atual estiver finalizado.
       if (hasChallengesContent() && !challengesFinalized()) {
         const done = getCompletedChallengesCount();
         const total = CHALLENGES_DATA.allChallenges.length;
-        const confirmReplace = confirm(
-          `Os desafios atuais ainda não foram finalizados (${done}/${total} concluídos).\n\n` +
-          `Novo upload de desafios só é permitido quando o atual estiver 100% concluído.\n\n` +
-          `Quer substituir mesmo assim? O progresso de XP destes desafios será perdido.`
+        setImportStatus(
+          `⛔ Upload bloqueado: finalize os desafios atuais (${done}/${total} concluídos) antes de importar uma nova lista.`,
+          'error'
         );
-        if (!confirmReplace) {
-          setImportStatus(`⛔ Upload bloqueado: finalize os ${total} desafios atuais antes de importar uma nova lista.`, 'error');
-          return;
-        }
+        return;
       }
       applyImportedChallenges(parsed.challenges);
+      ensureStartDate();
       saveContent();
       setImportStatus(`✅ Desafios importados de ${file.name}: ${parsed.challenges.allChallenges.length} desafio(s) substituindo a lista anterior.`, 'ok');
     }
