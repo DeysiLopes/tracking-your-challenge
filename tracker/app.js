@@ -1076,6 +1076,14 @@ function toggleChallengeDone() {
   } else {
     cs.done = false;
     showToast('Desafio desmarcado');
+    // Garantir atualização imediata do mascote e da UI do dashboard
+    saveState();
+    checkBadges();
+    syncCatLevel();
+    renderMascot();
+    refreshAll();
+    openChallengeModal(activeChallengeId);
+    return;
   }
   saveState();
   checkBadges();
