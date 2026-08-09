@@ -12,38 +12,38 @@
 //   . = transparente · o = contorno · b = corpo · i = orelha interna
 //   e = olho · E = olho alternativo · n = nariz · w = branco · s = óculos
 const FACE = [
-  '..obbbbbbbbbo..',
+  '..obbbbbbbbbbo..',
   '.obbbbbbbbbbbbo.',
   'obbbbbbbbbbbbbbo',
   'obbbbbbbbbbbbbbo',
-  'obbbeebbbbeebbo',
-  'obbbbbnbbbbbbbo',
-  'obbwbbwwbbwbbo',
+  'obbbeebbbbeebbbo',
+  'obbbbbbbbbbbbbbo',
+  'obbwbbbwwbbbwbbo',
   '.obbwwwwwwwwbbo.',
   '..obbbbbbbbbbo..',
 ];
 
 const EARS = [
-  '..oo......oo..',
-  '.obio....oibo.',
-  '.obbo....obbo.',
+  '...oo......oo...',
+  '..obio....oibo..',
+  '..obbo....obbo..',
 ];
 
 const HAT = [
-  '.......oo.....',
-  '......oooo....',
-  '.....oooooo...',
-  '....oooooooo..',
-  '.oooooooooooo.',
+  '.......oo.......',
+  '......oooo......',
+  '.....oooooo.....',
+  '....oooooooo....',
+  '..oooooooooooo..',
 ];
 
 const CROWN = [
-  '..o....o....o.',
-  '.ooo..ooo..ooo',
-  'oooooooooooooo',
+  '...o....o....o..',
+  '..ooo..ooo..ooo.',
+  '.oooooooooooooo.',
 ];
 
-const SUNGLASSES_FACE = 'obbbbssssssbbbo';
+const SUNGLASSES_FACE = 'obbbssssssssbbbo';
 
 // Um gatinho por nível de XP (ver XP_LEVELS em app.js).
 const CAT_SKINS = {
@@ -88,6 +88,7 @@ function catRows(skin) {
 function catSVG(skin, cls) {
   const { rows, faceBase } = catRows(skin);
   const H = rows.length;
+  const W = Math.max(...rows.map(r => r.length));
   const fillFor = {
     o: skin.outline, b: skin.body, i: skin.ear, e: skin.eye,
     E: skin.eyeAlt, n: skin.nose, w: skin.white, s: skin.sunglasses,
@@ -97,6 +98,7 @@ function catSVG(skin, cls) {
 
   const hasEars = skin.accessory !== 'hat';
   const earRow0 = skin.accessory === 'crown' ? CROWN.length : 0; // linha onde as orelhas começam
+  const midCol = Math.floor(W / 2);
 
   const bodyRects = [];
   let earL = '', earR = '', eyeL = '', eyeR = '';
@@ -107,10 +109,10 @@ function catSVG(skin, cls) {
       if (ch === '.') continue;
       const inEars = hasEars && r >= earRow0 && r < earRow0 + EARS.length;
       const isEyeRow = r === faceBase + 4 && (ch === 'e' || ch === 'E');
-      if (inEars && c < 7) earL += rectFor(r, c, ch);
-      else if (inEars && c >= 7) earR += rectFor(r, c, ch);
-      else if (isEyeRow && c < 7) eyeL += rectFor(r, c, ch);
-      else if (isEyeRow && c >= 7) eyeR += rectFor(r, c, ch);
+      if (inEars && c < midCol) earL += rectFor(r, c, ch);
+      else if (inEars && c >= midCol) earR += rectFor(r, c, ch);
+      else if (isEyeRow && c < midCol) eyeL += rectFor(r, c, ch);
+      else if (isEyeRow && c >= midCol) eyeR += rectFor(r, c, ch);
       else bodyRects.push(rectFor(r, c, ch));
     }
   }
@@ -125,5 +127,5 @@ function catSVG(skin, cls) {
   if (eyeL) parts += `<g class="cat-eyes cat-eye cat-eye-l">${eyeL}</g>`;
   if (eyeR) parts += `<g class="cat-eyes cat-eye cat-eye-r">${eyeR}</g>`;
 
-  return `<svg class="cat-svg ${cls || ''}" viewBox="0 0 14 ${H}" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges" role="img" aria-label="${skin.name}">${parts}</svg>`;
+  return `<svg class="cat-svg ${cls || ''}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges" role="img" aria-label="${skin.name}">${parts}</svg>`;
 }
