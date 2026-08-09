@@ -661,6 +661,20 @@ function renderDashboard() {
 }
 
 // Hero do Dashboard: carinha do gato em pixel art + nível + XP geral / mão na massa / plano.
+function ensureXPHeaders() {
+  const totalXP = getTotalXP();
+  document.querySelectorAll('.page-header').forEach(header => {
+    let elxp = header.querySelector('.page-xp');
+    if (!elxp) {
+      elxp = el('div', { className: 'page-xp' }, el('div', { className: 'page-xp-value' }, totalXP + ' XP'));
+      header.appendChild(elxp);
+    } else {
+      const val = elxp.querySelector('.page-xp-value');
+      if (val) val.textContent = totalXP + ' XP';
+    }
+  });
+}
+
 function renderXPHero() {
   const totalXP = getTotalXP();
   const xpMao = getEarnedXP();
@@ -687,6 +701,9 @@ function renderXPHero() {
     $('xp-hero-sub').textContent = '🏆 Nível máximo atingido!';
     $('xp-bar-fill').style.width = '100%';
   }
+
+  // Ensure small XP badge is present and updated in every view header
+  ensureXPHeaders();
 }
 
 // ════════════════════════════════════════════════════════

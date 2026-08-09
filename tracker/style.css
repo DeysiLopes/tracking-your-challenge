@@ -69,6 +69,12 @@
   --transition:     0.2s cubic-bezier(0.4,0,0.2,1);
 }
 
+/* Small XP badge added to each view header */
+.page-header { display:flex; align-items:center; gap:12px; }
+.page-xp { margin-left:auto; display:flex; align-items:center; gap:8px; }
+.page-xp-value { background:var(--indigo-bg-card); padding:6px 10px; border-radius:999px; font-size:13px; font-weight:700; color:var(--indigo); border:1px solid var(--border-accent); }
+
+
 /* ─── Design Tokens — Dark Premium (tema alternativo) ─── */
 [data-theme="premium"] {
   --bg-base:        #0a0c14;
