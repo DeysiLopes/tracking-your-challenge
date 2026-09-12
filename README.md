@@ -216,9 +216,9 @@ flowchart LR
 |---|---|---|
 | `ci-develop.yml` / `ci-main.yml` | PR + push to `develop` / `main` | JS syntax check, Python compile check, HTTP smoke test |
 | `create-pr-feature-to-develop.yml` | push to `feature/*` | opens/updates PR `feature/*` → `develop` |
-| `promote-develop-to-release.yml` | push to `develop` | derives next `vX.Y.Z` from conventional commits, creates `release/vX.Y.Z` from `main`, bumps `VERSION`, tags, opens PR → `main` |
+| `promote-develop-to-release.yml` | push to `develop` | derives next `vX.Y.Z` from conventional commits, creates `release/vX.Y.Z` from `main`, bumps `VERSION`, tags, **creates the GitHub Release** (bundle) and opens PR → `main` |
 | `create-pr-release-to-main.yml` | push to `release/*` | (re)opens PR `release/*` → `main` (out-of-band recovery) |
-| `publish.yml` | push tag `v*` | creates a GitHub Release with the `tracker.zip` bundle |
+| `publish.yml` | user-pushed tag `v*` | out-of-band: creates/updates the GitHub Release (tags pushed from inside a workflow never fire `on: push`) |
 
 **Rules to keep the pipeline happy:**
 
