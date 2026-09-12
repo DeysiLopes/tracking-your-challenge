@@ -1,3 +1,3 @@
-# 🛫 Features & Funcionalidades — 90 Dias na Gringa Tracker
+# 🛫 Features & Funcionalidades — Tracker
 
 Veja a documentação completa em: [../features.md](../features.md)

@@ -1,6 +1,6 @@
-# 🐱 Features & Funcionalidades — 90 Dias na Gringa Tracker
+# 🐱 Features & Funcionalidades — Tracker
 
-Uma plataforma web moderna (HTML5, CSS3 Vanilla, JavaScript ES6+) construída para acompanhar o plano de estudos de 90 dias focado em vagas internacionais para Senior Software Engineer.
+Uma plataforma web moderna (HTML5, CSS3 Vanilla, JavaScript ES6+) construída para acompanhar qualquer plano de estudo de N dias focado em vagas internacionais para Senior Software Engineer.
 
 ---
 
@@ -49,7 +49,7 @@ Uma plataforma web moderna (HTML5, CSS3 Vanilla, JavaScript ES6+) construída pa
   - Ao concluir uma tarefa, ele **se lambe** (groom) e solta uma mensagem de incentivo.
   - Ao concluir um desafio ou subir de nível, ele **comemora** (pula com confete) e aparece um balão de fala.
   - Quando há muito tempo sem atividade, ele **chora**: semanas atrasadas ou desafios não concluídos sem atualização por mais de 7 dias ativam lágrimas animadas no mascote.
-- **🏅 Badges de Desafio:** Cada desafio concluído vira um badge colecionável com **gatinho pixel art + o nome do desafio** (ex.: "90 Dias na Gringa"). Os badges acumulam para sempre, mesmo ao trocar a lista de desafios.
+- **🏅 Badges de Desafio:** Cada desafio concluído vira um badge colecionável com **gatinho pixel art + o nome do desafio** (ex.: "News Feed"). Os badges acumulam para sempre, mesmo ao trocar a lista de desafios.
 - **Contador de Streak 🔥:** Registro de dias consecutivos realizando tentativas ou concluindo desafios.
 - **Guia "📐 Os 9 Passos":** Card retrátil com o método oficial de resolução de System Design (Requirements, Scale, API, Data Model, Architecture, Deep Dive, Failure, Scale x10, Trade-offs).
 - **Editor de Tentativas:** Espaço em Markdown para rascunhar a solução antes de marcar como finalizada, mantendo histórico de tentativas anteriores por desafio.

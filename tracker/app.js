@@ -1,5 +1,5 @@
 /**
- * app.js — Lógica principal do Tracker 90 Dias na Gringa
+ * app.js — Lógica principal do Tracker
  */
 
 // ════════════════════════════════════════════════════════
@@ -1413,7 +1413,7 @@ ${note || '_Sem notas ainda._'}
 ${week.obsidianTags.map(t => '#' + t).join(' ')}
 
 ---
-*Gerado pelo 90 Dias na Gringa Tracker*
+*Gerado pelo Tracker*
 `;
 }
 
@@ -1452,7 +1452,7 @@ ${challenge.obsidianLinks.join('\n')}
 ${attempts || '_Sem tentativas ainda._'}
 
 ---
-*Gerado pelo 90 Dias na Gringa Tracker*
+*Gerado pelo Tracker*
 `;
 }
 
@@ -1472,7 +1472,7 @@ tags: [90-dias-na-gringa, progresso, dashboard]
 data_export: "${new Date().toISOString().split('T')[0]}"
 ---
 
-# 📊 Progresso — 90 Dias na Gringa
+# 📊 Progresso — Tracker
 
 > Dia **${day || '?'}** de ${ACTIVE_PLAN.totalDays} · Progresso total: **${getTotalProgress()}%** · XP: **${getTotalXP()}**
 
@@ -1510,9 +1510,9 @@ function generateIndexMD() {
 tags: [90-dias-na-gringa, índice]
 ---
 
-# 🛫 90 Dias na Gringa — Índice
+# 🛫 Tracker — Índice
 
-> Plano de 90 dias para preparação de vaga internacional como Senior Software Engineer.
+> Plano de estudo de N dias para preparação de vaga internacional como Senior Software Engineer.
 
 ## 📋 Semanas do Plano
 
@@ -1536,7 +1536,7 @@ ${challengeLinks}
 - [[rh-app]]
 
 ---
-*90 Dias na Gringa Tracker*
+*Tracker*
 `;
 }
 

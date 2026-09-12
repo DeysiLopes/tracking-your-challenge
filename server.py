@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-server.py — Servidor do Tracker 90 Dias na Gringa
+server.py — Servidor do Tracker
 
 Só stdlib (Python 3). Substitui o `python3 -m http.server`:
   - Serve os arquivos estáticos da raiz do repo (`/` → tracker/index.html).

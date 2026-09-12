@@ -1,4 +1,4 @@
-# Tracking Your Challenge — 90 Days Tracker
+# Tracking Your Challenge — N-day Plan Tracker
 
 A **build-free, dependency-free** web platform (HTML5 + CSS3 + vanilla ES6 JavaScript on the front, **Python stdlib** on the back) for tracking an N-day study plan and hands-on System Design challenges — with everything persisted in **SQLite**.
 
@@ -54,11 +54,11 @@ Open in the browser: **http://localhost:8765/tracker/** (the root `/` redirects 
 mkdir -p ~/.config/systemd/user
 ```
 
-Create `~/.config/systemd/user/tracker-90dias.service`:
+Create `~/.config/systemd/user/tracker.service`:
 
 ```ini
 [Unit]
-Description=Tracker 90 Days (static + SQLite API)
+Description=Tracker (static + SQLite API)
 
 [Service]
 Type=simple
@@ -72,8 +72,8 @@ WantedBy=default.target
 
 ```bash
 systemctl --user daemon-reload
-systemctl --user enable --now tracker-90dias.service
-systemctl --user status tracker-90dias.service
+systemctl --user enable --now tracker.service
+systemctl --user status tracker.service
 ```
 
 ---
