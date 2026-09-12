@@ -112,3 +112,18 @@ jobs:
               --title "Release $TAG" \
               --body "Automated release promote: \`develop\` → \`main\` via $RELEASE_BRANCH (tag \`$TAG\`)."
           fi
+
+      - name: Bundle app and create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Workflow-pushed tags don't trigger `on: push: tags` (GITHUB_TOKEN),
+          # so the actor that pushes the tag creates the release itself.
+          TAG="${{ steps.version.outputs.tag }}"
+          mkdir -p dist
+          zip -r dist/tracker.zip tracker/ README.md TEMPLATE-PLANO.md TEMPLATE-DESAFIOS.md VERSION
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" dist/tracker.zip --clobber
+          else
+            gh release create "$TAG" dist/tracker.zip --title "$TAG" --generate-notes
+          fi
