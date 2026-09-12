@@ -16,7 +16,7 @@ Adicionado `max-height: 85vh; display: flex; flex-direction: column;` no `.modal
 Para concluir um desafio e ganhar XP, o usuário deve obrigatoriamente fornecer uma nota/solução do entregável (na caixa de texto ou em uma tentativa salva anteriormente).
 
 ### 🛠️ Solução Aplicada
-Atualizada a função `toggleChallengeDone()` em [`tracker/app.js`](file:///home/deysi/workspace/tracking-your-challenge/tracker/app.js#L1049-L1083).
+Atualizada a função `toggleChallengeDone()` em [`tracker/app.js`](tracker/app.js#L1049-L1083).
 
 ---
 
@@ -26,17 +26,17 @@ Atualizada a função `toggleChallengeDone()` em [`tracker/app.js`](file:///home
 Ao subir de nível de XP (para o nível 2 "Gato Cool"), o gatinho mudava para a skin com óculos escuros (`SUNGLASSES_FACE`), mas a tag `<svg>` usava `viewBox="0 0 14 ${H}"`, cortando os pixels que ultrapassavam 14 colunas.
 
 ### 🛠️ Solução Aplicada
-Atualizada a função `catSVG()` em [`tracker/cats.js`](file:///home/deysi/workspace/tracking-your-challenge/tracker/cats.js#L88-L131) para calcular a largura `W` e o ponto médio `midCol` dinamicamente.
+Atualizada a função `catSVG()` em [`tracker/cats.js`](tracker/cats.js#L88-L131) para calcular a largura `W` e o ponto médio `midCol` dinamicamente.
 
 ---
 
 ## 4. Normalização das Matrizes do Grid Pixel-Art (Alinhamento de 16 Colunas)
 
 ### 🔴 Diagnóstico do Problema
-Embora o `viewBox` aceitasse 16 colunas (`viewBox="0 0 16 12"`), as matrizes originais dos componentes em [`tracker/cats.js`](file:///home/deysi/workspace/tracking-your-challenge/tracker/cats.js#L14-L46) tinham larguras desiguais e assimétricas.
+Embora o `viewBox` aceitasse 16 colunas (`viewBox="0 0 16 12"`), as matrizes originais dos componentes em [`tracker/cats.js`](tracker/cats.js#L14-L46) tinham larguras desiguais e assimétricas.
 
 ### 🛠️ Solução Aplicada
-Todas as matrizes (`FACE`, `EARS`, `HAT`, `CROWN` e `SUNGLASSES_FACE`) foram padronizadas em 16 colunas em [`tracker/cats.js`](file:///home/deysi/workspace/tracking-your-challenge/tracker/cats.js#L14-L46).
+Todas as matrizes (`FACE`, `EARS`, `HAT`, `CROWN` e `SUNGLASSES_FACE`) foram padronizadas em 16 colunas em [`tracker/cats.js`](tracker/cats.js#L14-L46).
 
 ---
 
@@ -46,7 +46,7 @@ Todas as matrizes (`FACE`, `EARS`, `HAT`, `CROWN` e `SUNGLASSES_FACE`) foram pad
 Mesmo após alterar o arquivo no disco e reiniciar o servidor, navegadores web mantêm cópias locais em memória/disco (**Browser HTTP Cache**) dos arquivos `.js` e `.css`.
 
 ### 🛠️ Solução Proposta
-Adicionar o cabeçalho `Cache-Control: no-cache, no-store, must-revalidate` em [`server.py`](file:///home/deysi/workspace/tracking-your-challenge/server.py#L95-L101) e o sufixo `?v=2` nas tags de script em [`tracker/index.html`](file:///home/deysi/workspace/tracking-your-challenge/tracker/index.html#L332-L335).
+Adicionar o cabeçalho `Cache-Control: no-cache, no-store, must-revalidate` em [`server.py`](server.py#L95-L101) e o sufixo `?v=2` nas tags de script em [`tracker/index.html`](tracker/index.html#L332-L335).
 
 ---
 
@@ -55,7 +55,7 @@ Adicionar o cabeçalho `Cache-Control: no-cache, no-store, must-revalidate` em [
 ### 🔴 Diagnóstico do Problema
 Ao concluir um desafio e ganhar a conquista/badge do gatinho, a seção **Conquistas** no dashboard exibia o texto bruto da tag `<svg class="cat-svg cat-tier-2" ...>` em vez do desenho vetorial.
 
-Isso acontecia porque na função `renderChallengeBadges()` em [`tracker/app.js`](file:///home/deysi/workspace/tracking-your-challenge/tracker/app.js#L383), a string retornada por `catSVG(...)` era repassada como argumento de filho na função auxiliar `el('div', { className: 'challenge-badge-cat' }, catSVG(...))`. 
+Isso acontecia porque na função `renderChallengeBadges()` em [`tracker/app.js`](tracker/app.js#L383), a string retornada por `catSVG(...)` era repassada como argumento de filho na função auxiliar `el('div', { className: 'challenge-badge-cat' }, catSVG(...))`. 
 
 Como a função helper `el()` converte argumentos do tipo `string` usando `document.createTextNode()`, o navegador interpretava o código HTML como um texto literal, exibindo `<svg...` escrito na tela em vez de renderizar o gatinho!
 
@@ -70,7 +70,7 @@ Como a função helper `el()` converte argumentos do tipo `string` usando `docum
 
 ### 🛠️ Solução Proposta
 
-No arquivo [`tracker/app.js`](file:///home/deysi/workspace/tracking-your-challenge/tracker/app.js#L383):
+No arquivo [`tracker/app.js`](tracker/app.js#L383):
 
 ```javascript
 // Alterar a criação da div da imagem do badge na função renderChallengeBadges:

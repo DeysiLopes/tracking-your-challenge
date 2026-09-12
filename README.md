@@ -1,69 +1,69 @@
-# 🛫 Tracking Your Challenge — Tracker 90 Dias
+# Tracking Your Challenge — 90 Days Tracker
 
-Plataforma web **sem build, sem dependências** (HTML5 + CSS3 + JavaScript ES6 puro no front, **Python stdlib** no back) para acompanhar um plano de estudos de N dias e desafios práticos de System Design — tudo com persistência em **SQLite**.
+A **build-free, dependency-free** web platform (HTML5 + CSS3 + vanilla ES6 JavaScript on the front, **Python stdlib** on the back) for tracking an N-day study plan and hands-on System Design challenges — with everything persisted in **SQLite**.
 
-> O tracker **começa vazio**: você importa seus arquivos `.md` (plano e desafios) e ele se adapta sozinho ao formato detectado. Nada de conteúdo hardcoded.
-
----
-
-## ✨ O que o tracker faz
-
-| Área | O que entrega |
-|------|---------------|
-| **Dashboard** | Dia atual (`Dia X de N`), barra de progresso geral e por fase, destaque da semana vigente com tarefas + entregável, mini-grid das semanas |
-| **Plano Semanal** | Visualização por fases (importadas de um `.md`), checklist separando leituras de práticas, entregável semanal, modal com detalhes e tags Obsidian |
-| **Desafios (gamificado)** | Lista de desafios importada de outro `.md`, XP por desafio (+500), níveis (Iniciante → Staff Engineer), streak 🔥, editor de tentativas em Markdown, tasks atômicas com critério de aceite e dependências, **mascote gatinho pixel-art** (se lambe ao concluir tasks, comemora ao concluir desafios) e **badges colecionáveis** com o nome de cada desafio concluído |
-| **Anotações** | Bloco de notas Markdown por semana, com suporte a wiki-links `[[...]]` e hashtags para o Obsidian |
-| **Exportação** | Export completo `.zip` (índice + progresso + cada semana + cada desafio em `.md` com YAML frontmatter), export da semana atual e do progresso |
-| **Importação** | Seletor de `.md` com auto-detecção de formato (veja [Formatos suportados](#-formatos-suportados)) |
-| **Persistência** | Tudo salvo em SQLite via API REST do `server.py`, com espelho em `localStorage` como fallback |
+> The tracker **starts empty**: you import your `.md` files (plan and challenges) and it adapts itself to the detected format. No hardcoded content.
 
 ---
 
-## 🚀 Como rodar
+## What the tracker does
 
-Requer **Python 3.8+** (só stdlib, não instala nada).
+| Area | What it delivers |
+|------|------------------|
+| **Dashboard** | Current day (`Day X of N`), overall and per-phase progress bars, highlight of the current week with tasks + deliverable, mini weekly grid |
+| **Weekly Plan** | Phase-based visualization (imported from a `.md`), checklist splitting readings from hands-on work, weekly deliverable, detail modal with Obsidian tags |
+| **Challenges (gamified)** | Challenge list imported from another `.md` file, XP per challenge (+500), levels (Beginner → Staff Engineer), streak, Markdown attempt editor, atomic tasks with acceptance criteria and dependencies, **pixel-art cat mascot** (licks itself when you complete tasks, celebrates when you finish challenges) and **collectible badges** named after each completed challenge |
+| **Notes** | Markdown notes block per week, with wiki-link `[[...]]` and hashtag support for Obsidian |
+| **Export** | Full `.zip` export (index + progress + each week + each challenge as `.md` with YAML frontmatter), current-week export and progress export |
+| **Import** | `.md` picker with format auto-detection (see [Supported formats](#supported-formats)) |
+| **Persistence** | Everything saved in SQLite via the REST API on `server.py`, mirrored to `localStorage` as a fallback |
+
+---
+
+## How to run
+
+Requires **Python 3.8+** (stdlib only — nothing is installed).
 
 ```bash
 cd tracking-your-challenge
 
-# Sobe o servidor na porta 8765 (estáticos + API + SQLite)
+# Starts the server on port 8765 (static + API + SQLite)
 python3 server.py
 
-# Porta / banco personalizados
-python3 server.py --port 9000 --db /caminho/tracker.db
+# Custom port / database
+python3 server.py --port 9000 --db /path/to/tracker.db
 
-# Modo teste com banco separado (não mexe no tracker.db oficial)
+# Test mode with a separate database (does not touch the official tracker.db)
 python3 server.py --port 9000 --db tracker-tests.db
 ```
 
-Abra no navegador: **http://localhost:8765/tracker/** (a raiz `/` redireciona para `/tracker/`).
+Open in the browser: **http://localhost:8765/tracker/** (the root `/` redirects to `/tracker/`).
 
-### Primeiro uso (importar seu conteúdo)
+### First use (import your content)
 
-1. Clique em **📂 Importar** (sidebar ou tela de boas-vindas).
-2. Selecione o `.md` do plano (ex.: um arquivo no formato `TEMPLATE-PLANO`) — ele vira o plano ativo.
-3. (Opcional) Selecione o `.md` de desafios (formato `TEMPLATE-DESAFIOS`) — ele vira a lista gamificada.
-4. Pronto. O conteúdo fica salvo no `tracker.db` e é restaurado no próximo acesso.
+1. Click **Import** (sidebar or welcome screen).
+2. Select the `.md` of the plan (e.g., a file in the `TEMPLATE-PLANO` format) — it becomes the active plan.
+3. (Optional) Select the `.md` of challenges (in the `TEMPLATE-DESAFIOS` format) — it becomes the gamified list.
+4. Done. The content is saved to `tracker.db` and restored on the next visit.
 
-> O tracker também funciona abrindo `tracker/index.html` direto por `file://` — nesse caso o estado fica só em `localStorage`.
+> The tracker also works by opening `tracker/index.html` directly over `file://` — in that case state lives only in `localStorage`.
 
-### Rodando em segundo plano (opcional, systemd user service)
+### Running in the background (optional, systemd user service)
 
 ```bash
 mkdir -p ~/.config/systemd/user
 ```
 
-Crie `~/.config/systemd/user/tracker-90dias.service`:
+Create `~/.config/systemd/user/tracker-90dias.service`:
 
 ```ini
 [Unit]
-Description=Tracker 90 Dias (static + API SQLite)
+Description=Tracker 90 Days (static + SQLite API)
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/python3 /CAMINHO/DO/REPO/server.py --port 8765
-WorkingDirectory=/CAMINHO/DO/REPO
+ExecStart=/usr/bin/python3 /PATH/TO/REPO/server.py --port 8765
+WorkingDirectory=/PATH/TO/REPO
 Restart=on-failure
 
 [Install]
@@ -78,128 +78,128 @@ systemctl --user status tracker-90dias.service
 
 ---
 
-## 📦 Formatos suportados
+## Supported formats
 
-O tracker detecta o tipo de conteúdo **automaticamente** a partir do arquivo `.md`. Os dois formatos são mutuamente exclusivos e podem ser importados juntos (um arquivo de cada).
+The tracker detects the content type **automatically** from the `.md` file. The two formats are mutually exclusive and can be imported together (one file of each).
 
-### 1. Formato Programático — o plano de estudos
+### 1. Programmatic format — the study plan
 
-Detectado quando o arquivo tem linhas `## FASE N — ...`.
-
-```markdown
-## FASE 1 — Dias 1–30: Fundamentos
-### Semana 1 — SOLID
-- Ler capítulo 1 de Arquitetura Limpa
-- **Entregável:** mapa mental dos princípios SOLID
-```
-
-Regras:
-- **Fase** = `## FASE N — Dias X–Y: Nome` (o range de dias pode ser 1–90, 1–30, etc. — o total `N` é derivado do próprio arquivo).
-- **Semana** = `### Semana N — Título`.
-- **Tarefas** = bullets `- ...`. Se o texto contiver "mão na massa", vira tarefa *prática*; senão, *leitura*.
-- **Entregável** = bullet `- **Entregável:** ...`.
-- O que não casar com essas regras (títulos `#`, parágrafos, tabelas) é ignorado.
-
-### 2. Formato Mão na Massa — desafios com tasks atômicas
-
-Detectado quando o arquivo tem linhas `## ... Desafio N — ...`.
+Detected when the file has `## PHASE N — ...` lines.
 
 ```markdown
-## 🏦 Desafio 1 — News Feed (Hexagonal + DDD + SOLID)
-
-**Tema:** Feed com followers e leitura/escrita assimétrica.
-
-### 🧱 Requisitos funcionais
-- Usuário cria post; followers recebem no feed
+## PHASE 1 — Days 1–30: Fundamentals
+### Week 1 — SOLID
+- Read chapter 1 of Clean Architecture
+- **Deliverable:** mind map of the SOLID principles
 ```
 
-Regras:
-- **Desafio** = `## 🏦 Desafio N — Título (tag1 + tag2)`. As tags entre parênteses viram as "trilhas" do desafio.
-- **Descrição** = parágrafo `**Tema:** ...` logo após o header do desafio.
-- **Tasks atômicas** = seções `###` com headers reconhecidos (tabela abaixo). Cada uma vira uma task com **critério de aceite** e **dependência** automática (só desbloqueia quando as anteriores estão concluídas).
+Rules:
+- **Phase** = `## PHASE N — Days X–Y: Name` (the day range can be 1–90, 1–30, etc. — the total `N` is derived from the file itself).
+- **Week** = `### Week N — Title`.
+- **Tasks** = `- ...` bullets. If the text contains "hands-on", it becomes a *practice* task; otherwise a *reading* task.
+- **Deliverable** = `- **Deliverable:** ...` bullet.
+- Anything that does not match these rules (`#` headings, paragraphs, tables) is ignored.
 
-| Header `###` da seção | Task gerada | Depende de |
-|-----------------------|-------------|------------|
-| `### 🖊️ Fase A` | Fase A — System Design (gravação) | — |
-| `### 🧱 Requisitos funcionais` | Requisitos | Fase A |
-| `### 🧠 Arquitetura obrigatória` | Arquitetura | Requisitos |
-| `### 💾 Persistência` | Persistência + migrations | Arquitetura |
-| `### 🧪 Testes` | Testes | Persistência |
-| `### 🐳 Containerização` | Aplicação (Docker) | Testes |
-| `### 📚 README.md` | README | Aplicação |
-| `### 💡 Diferenciais` | Diferenciais (opcional) | — |
-| `### ✅ Critérios de aceite` | Critérios | Aplicação |
+### 2. Hands-on format — challenges with atomic tasks
 
-> **Importante:** não use `##` com outro título no meio da lista de desafios — o parser encerra a lista aí. Seções com `###` de outro nome entram como texto, mas não viram task.
+Detected when the file has `## ... Challenge N — ...` lines.
 
-### Gate de substituição
+```markdown
+## Challenge 1 — News Feed (Hexagonal + DDD + SOLID)
 
-- **Plano programático:** pode ser substituído a qualquer momento (novo `.md`).
-- **Desafios:** novo upload só é permitido quando os desafios atuais estiverem **todos concluídos**. Antes disso o import é bloqueado (sem atalho — finalize o desafio atual para liberar o próximo). Os badges de desafios já conquistados ficam salvos para sempre.
+**Topic:** Feed with followers and asymmetric read/write.
+
+### Functional requirements
+- User creates a post; followers receive it in their feed
+```
+
+Rules:
+- **Challenge** = `## Challenge N — Title (tag1 + tag2)`. The tags between parentheses become the challenge "tracks".
+- **Description** = the `**Topic:** ...` paragraph right after the challenge header.
+- **Atomic tasks** = `###` sections with recognized headers (table below). Each one becomes a task with **acceptance criteria** and an **automatic dependency** (only unlocks when the previous ones are completed).
+
+| `###` section header | Generated task | Depends on |
+|----------------------|----------------|------------|
+| `### Phase A` | Phase A — System Design (recording) | — |
+| `### Functional requirements` | Requirements | Phase A |
+| `### Required architecture` | Architecture | Requirements |
+| `### Persistence` | Persistence + migrations | Architecture |
+| `### Tests` | Tests | Persistence |
+| `### Containerization` | Application (Docker) | Tests |
+| `### README.md` | README | Application |
+| `### Differentiators` | Differentiators (optional) | — |
+| `### Acceptance criteria` | Criteria | Application |
+
+> **Important:** do not use `##` with a different title in the middle of the challenge list — the parser ends the list there. `###` sections with any other name are read as text but do not become tasks.
+
+### Replacement gate
+
+- **Programmatic plan:** can be replaced at any time (new `.md`).
+- **Challenges:** a new upload is only allowed when the current challenges are **all completed**. Before that, the import is blocked (no shortcut — finish the current challenge to unlock the next one). Badges from already completed challenges are saved forever.
 
 ---
 
-## 🧩 Templates de conteúdo
+## Content templates
 
-Para criar seus próprios arquivos `.md` no formato certo (e a auto-detecção funcionar), use os templates na raiz do projeto:
+To create your own `.md` files in the right format (so auto-detection works), use the templates at the project root:
 
-| Template | Formato | Serve para |
-|----------|---------|------------|
-| `TEMPLATE-PLANO.md` | Programático | Criar um plano de estudos de N dias (fases, semanas, tarefas, entregáveis) |
-| `TEMPLATE-DESAFIOS.md` | Mão na Massa | Criar desafios com tasks atômicas, critérios de aceite e dependências |
+| Template | Format | Used for |
+|----------|--------|----------|
+| `TEMPLATE-PLANO.md` | Programmatic | Creating an N-day study plan (phases, weeks, tasks, deliverables) |
+| `TEMPLATE-DESAFIOS.md` | Hands-on | Creating challenges with atomic tasks, acceptance criteria and dependencies |
 
-**Como usar:** copie o arquivo, edite as seções de exemplo e importe no tracker pelo botão **📂 Importar**. Cada template traz:
-- Uma seção **Como funciona** explicando as regras do formato;
-- Um **exemplo editável** completo;
-- Um **checklist** de validação antes de importar.
+**How to use:** copy the file, edit the example sections and import it into the tracker with the **Import** button. Each template includes:
+- A **How it works** section explaining the format rules;
+- A complete **editable example**;
+- A **validation checklist** before importing.
 
 ---
 
-## 🗂️ Estrutura do projeto
+## Project structure
 
 ```
 tracking-your-challenge/
-├── server.py                  # Backend Python (stdlib): estáticos + API /api/data, /api/health + SQLite
-├── tracker/                   # Frontend (sem build)
-│   ├── index.html             # Página única (sidebar, views, modal de import, export)
-│   ├── style.css              # Tema Catppuccin Mocha (padrão) + Dark Premium, glassmorphism
-│   ├── app.js                 # Lógica da UI, persistência (servidor + localStorage), import/export
-│   ├── parser.js              # Auto-detecção e parsing dos dois formatos .md
-│   ├── cats.js                # Mascote: gatos pixel-art em SVG por nível de XP + reações
-│   └── data.js                # Camada de dados / helpers
-├── TEMPLATE-PLANO.md          # Template do formato programático
-├── TEMPLATE-DESAFIOS.md       # Template do formato mão na massa
-└── .gitignore                 # Exclui tracker.db, __pycache__ e planos pessoais
+├── server.py                  # Python backend (stdlib): static files + /api/data, /api/health API + SQLite
+├── tracker/                   # Frontend (no build)
+│   ├── index.html             # Single page (sidebar, views, import modal, export)
+│   ├── style.css              # Catppuccin Mocha theme (default) + Dark Premium, glassmorphism
+│   ├── app.js                 # UI logic, persistence (server + localStorage), import/export
+│   ├── parser.js              # Auto-detection and parsing of both .md formats
+│   ├── cats.js                # Mascot: pixel-art SVG cats per XP level + reactions
+│   └── data.js                # Data layer / helpers
+├── TEMPLATE-PLANO.md          # Programmatic format template
+├── TEMPLATE-DESAFIOS.md       # Hands-on format template
+└── .gitignore                 # Excludes tracker.db, __pycache__ and personal plans
 ```
 
 ---
 
-## 🛠️ API do servidor
+## Server API
 
-| Método | Rota | Descrição |
-|--------|------|-----------|
-| `GET` | `/api/health` | Saúde do servidor (`{"ok": true}`) |
-| `GET` | `/api/data` | Retorna `{content, states}` (conteúdo importado + estado persistido) |
-| `PUT` | `/api/data` | Grava `{content?}` e/ou `{state: {key, value}}` no SQLite |
+| Method | Route | Description |
+|--------|-------|-------------|
+| `GET` | `/api/health` | Server health (`{"ok": true}`) |
+| `GET` | `/api/data` | Returns `{content, states}` (imported content + persisted state) |
+| `PUT` | `/api/data` | Writes `{content?}` and/or `{state: {key, value}}` to SQLite |
 
-O banco é uma tabela `kv` (`key`, `value`, `updated_at`) em `tracker.db` (na raiz por padrão).
+The database is a `kv` table (`key`, `value`, `updated_at`) in `tracker.db` (at the project root by default).
 
 ---
 
-## 🧪 Testes (manutenção)
+## Tests (maintenance)
 
-O projeto usa testes de comportamento (sem framework) para validar a persistência:
+The project uses framework-free behavioral tests to validate persistence:
 
 ```bash
-node /tmp/opencode/test_tracker.js      # testes de unidade/API (Node, com fetch stub)
-node /tmp/opencode/browser_tests.js     # testes de browser (chromium headless + server temporário)
-node /tmp/opencode/harness-cats.js <pasta-dos-.md>   # gamificação + gatos — conteúdo vem do import real
+node /path/to/test_tracker.js       # unit/API tests (Node, with fetched fetch stub)
+node /path/to/browser_tests.js      # browser tests (chromium headless + temporary server)
+node /path/to/harness-cats.js <folder-with-.md>   # gamification + cats — content comes from the real import
 ```
 
-O `harness-cats.js` não fixa nenhum arquivo: ele descobre os `.md` da pasta indicada (via auto-detecção do parser), importa pelo fluxo real do app e valida XP/badges/gate/gatos. Assim, renomear arquivos nunca quebra o teste.
+The `harness-cats.js` does not hardcode any file: it discovers the `.md` files in the given folder (via the parser auto-detection), imports them through the real app flow and validates XP/badges/gate/cats. This way renaming files never breaks the test.
 
 ---
 
-## 📄 Licença
+## License
 
-Privado — para uso pessoal de estudo.
+Private — for personal study use.
