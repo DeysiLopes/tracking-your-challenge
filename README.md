@@ -42,8 +42,8 @@ Open in the browser: **http://localhost:8765/tracker/** (the root `/` redirects 
 ### First use (import your content)
 
 1. Click **Import** (sidebar or welcome screen).
-2. Select the `.md` of the plan (e.g., a file in the `TEMPLATE-PLANO` format) — it becomes the active plan.
-3. (Optional) Select the `.md` of challenges (in the `TEMPLATE-DESAFIOS` format) — it becomes the gamified list.
+2. Select the `.md` of the plan (e.g., a file in the `TEMPLATE-PROGRAMMATIC-PLAN` format) — it becomes the active plan.
+3. (Optional) Select the `.md` of challenges (in the `TEMPLATE-HANDS-ON-CHALLENGE` format) — it becomes the gamified list.
 4. Done. The content is saved to `tracker.db` and restored on the next visit.
 
 > The tracker also works by opening `tracker/index.html` directly over `file://` — in that case state lives only in `localStorage`.
@@ -145,8 +145,8 @@ To create your own `.md` files in the right format (so auto-detection works), us
 
 | Template | Format | Used for |
 |----------|--------|----------|
-| `TEMPLATE-PLANO.md` | Programmatic | Creating an N-day study plan (phases, weeks, tasks, deliverables) |
-| `TEMPLATE-DESAFIOS.md` | Hands-on | Creating challenges with atomic tasks, acceptance criteria and dependencies |
+| `TEMPLATE-PROGRAMMATIC-PLAN.md` | Programmatic | Creating an N-day study plan (phases, weeks, tasks, deliverables) |
+| `TEMPLATE-HANDS-ON-CHALLENGE.md` | Hands-on | Creating challenges with atomic tasks, acceptance criteria and dependencies |
 
 **How to use:** copy the file, edit the example sections and import it into the tracker with the **Import** button. Each template includes:
 - A **How it works** section explaining the format rules;
@@ -167,8 +167,8 @@ tracking-your-challenge/
 │   ├── parser.js              # Auto-detection and parsing of both .md formats
 │   ├── cats.js                # Mascot: pixel-art SVG cats per XP level + reactions
 │   └── data.js                # Data layer / helpers
-├── TEMPLATE-PLANO.md          # Programmatic format template
-├── TEMPLATE-DESAFIOS.md       # Hands-on format template
+├── TEMPLATE-PROGRAMMATIC-PLAN.md          # Programmatic format template
+├── TEMPLATE-HANDS-ON-CHALLENGE.md       # Hands-on format template
 └── .gitignore                 # Excludes tracker.db, __pycache__ and personal plans
 ```
 
