@@ -1,0 +1,32 @@
+name: Publish — GitHub Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Bundle app as release asset
+        run: |
+          mkdir -p dist
+          zip -r dist/tracker.zip tracker/ README.md TEMPLATE-PLANO.md TEMPLATE-DESAFIOS.md
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            echo "Release already exists — updating assets"
+            gh release upload "$GITHUB_REF_NAME" dist/tracker.zip --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" dist/tracker.zip \
+              --title "$GITHUB_REF_NAME" \
+              --generate-notes
+          fi

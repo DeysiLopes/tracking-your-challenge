@@ -1,0 +1,114 @@
+name: promote develop → release
+
+on:
+  push:
+    branches:
+      - develop
+
+concurrency:
+  group: promote-develop-to-release
+  cancel-in-progress: true
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Derive next version from conventional commits
+        id: version
+        run: |
+          LATEST=$(git tag --list 'v*' --sort=-v:refname | head -1)
+          if [ -z "$LATEST" ]; then
+            echo "tag=v0.1.0" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          MAJOR=$(echo "$LATEST" | sed 's/v//' | cut -d. -f1)
+          MINOR=$(echo "$LATEST" | sed 's/v//' | cut -d. -f2)
+          PATCH=$(echo "$LATEST" | sed 's/v//' | cut -d. -f3)
+
+          INCREMENT="patch"
+          while IFS= read -r msg; do
+            case "$msg" in
+              *"BREAKING CHANGE"*|*"!:"* )
+                INCREMENT="major"
+                break
+                ;;
+              feat:*|feat\(*:* )
+                [ "$INCREMENT" != "major" ] && INCREMENT="minor"
+                ;;
+              fix:*|fix\(*:* )
+                ;;
+            esac
+          done < <(git log "$LATEST..HEAD" --format="%s" 2>/dev/null || echo "")
+
+          case "$INCREMENT" in
+            major) MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0 ;;
+            minor) MINOR=$((MINOR + 1)); PATCH=0 ;;
+            patch) PATCH=$((PATCH + 1)) ;;
+          esac
+
+          echo "tag=v$MAJOR.$MINOR.$PATCH" >> "$GITHUB_OUTPUT"
+
+      - name: Create release branch from main, merge develop, tag, and PR to main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          RELEASE_BRANCH="release/$TAG"
+
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+
+          if ! gh api repos/${{ github.repository }}/branches/main --jq '.name' &>/dev/null; then
+            echo "Branch 'main' does not exist. Skipping."
+            exit 0
+          fi
+
+          COMMITS_AHEAD=$(gh api repos/${{ github.repository }}/compare/main...develop --jq '.ahead_by' 2>/dev/null || echo "0")
+          if [ "$COMMITS_AHEAD" -eq 0 ]; then
+            echo "No commits ahead of main. Skipping release."
+            exit 0
+          fi
+
+          echo "=== Creating release branch $RELEASE_BRANCH from main ==="
+          git fetch origin main
+          git checkout -b "$RELEASE_BRANCH" origin/main
+
+          echo "=== Merging develop into $RELEASE_BRANCH ==="
+          git fetch origin develop
+          if git merge origin/develop -m "chore: merge develop into $RELEASE_BRANCH"; then
+            echo "Merge succeeded (no conflicts)"
+          else
+            echo "Merge conflict detected — adopting develop's tree"
+            git merge --abort
+            git reset --hard origin/develop
+          fi
+
+          echo "=== Versioning $TAG ==="
+          echo "$TAG" > VERSION
+          git add VERSION
+          git commit -m "chore: release $TAG"
+          git tag "$TAG"
+
+          echo "=== Pushing branch and tag ==="
+          git push origin "$RELEASE_BRANCH"
+          git push origin "$TAG"
+
+          echo "=== Opening PR $RELEASE_BRANCH → main ==="
+          PR=$(gh pr list --repo "${{ github.repository }}" --base main --head "$RELEASE_BRANCH" --state open --json number -q '.[0].number' 2>/dev/null || echo "")
+          if [ -n "$PR" ]; then
+            gh pr edit "$PR" --repo "${{ github.repository }}" --title "Release $TAG" --body "Automated release promote: \`develop\` → \`main\` via $RELEASE_BRANCH (tag \`$TAG\`)."
+          else
+            gh pr create --repo "${{ github.repository }}" --base main --head "$RELEASE_BRANCH" \
+              --title "Release $TAG" \
+              --body "Automated release promote: \`develop\` → \`main\` via $RELEASE_BRANCH (tag \`$TAG\`)."
+          fi

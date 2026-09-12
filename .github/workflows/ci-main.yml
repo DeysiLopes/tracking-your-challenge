@@ -1,0 +1,47 @@
+name: CI — main
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-main-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: JS syntax check (tracker)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: |
+          for f in tracker/*.js; do node --check "$f" || exit 1; done
+
+      - name: Python compile check
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - run: python3 -m py_compile server.py
+
+      - name: HTTP smoke test
+        run: |
+          python3 server.py --port 8765 --db /tmp/tracker-test.db &
+          SERVER_PID=$!
+          OK=""
+          for i in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:8765/api/health >/dev/null 2>&1; then OK="yes"; break; fi
+            sleep 0.5
+          done
+          kill "$SERVER_PID" 2>/dev/null || true
+          wait "$SERVER_PID" 2>/dev/null || true
+          [ -n "$OK" ] || { echo "server did not start"; exit 1; }
+          echo "health OK — server serves the app"
+          curl -fsS -o /dev/null http://127.0.0.1:8765/tracker/

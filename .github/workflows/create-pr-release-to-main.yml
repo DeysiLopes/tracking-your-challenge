@@ -1,0 +1,54 @@
+name: release branch → main (open PR)
+
+on:
+  push:
+    branches:
+      - 'release/**'
+
+concurrency:
+  group: promote-release-to-main-${{ github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  open-pr:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Derive version from branch name
+        id: version
+        run: |
+          TAG="${GITHUB_REF_NAME#release/}"
+          echo "tag=v$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Open or recreate PR to main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          HEAD_BRANCH="$GITHUB_REF_NAME"
+
+          COMMITS_AHEAD=$(gh api repos/${{ github.repository }}/compare/main...$HEAD_BRANCH --jq '.ahead_by' 2>/dev/null || echo "0")
+          if [ "$COMMITS_AHEAD" -eq 0 ]; then
+            echo "No commits ahead of main. Skipping PR."
+            exit 0
+          fi
+
+          PR_NUMBER=$(gh pr list \
+            --head "$HEAD_BRANCH" \
+            --base main \
+            --state open \
+            --json number \
+            --jq '.[0].number // empty')
+
+          if [ -n "$PR_NUMBER" ]; then
+            echo "PR #$PR_NUMBER already exists — recreating"
+            gh pr close "$PR_NUMBER" 2>/dev/null || true
+          fi
+
+          gh pr create \
+            --base main \
+            --head "$HEAD_BRANCH" \
+            --title "chore: release $TAG → main" \
+            --body "Release PR\n\n\`$HEAD_BRANCH\` → \`main\`\n\nVersion: $TAG"
