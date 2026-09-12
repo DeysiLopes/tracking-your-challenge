@@ -16,12 +16,15 @@ jobs:
       - name: Bundle app as release asset
         run: |
           mkdir -p dist
-          zip -r dist/tracker.zip tracker/ README.md TEMPLATE-PLANO.md TEMPLATE-DESAFIOS.md
+          zip -r dist/tracker.zip tracker/ README.md TEMPLATE-PLANO.md TEMPLATE-DESAFIOS.md VERSION 2>/dev/null || zip -r dist/tracker.zip tracker/ README.md TEMPLATE-PLANO.md TEMPLATE-DESAFIOS.md
 
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          # Out-of-band path: only fires when the tag was pushed by a user/personal token.
+          # Tags pushed from inside a workflow (GITHUB_TOKEN) never trigger this table —
+          # the promote workflow creates that release itself.
           if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
             echo "Release already exists — updating assets"
             gh release upload "$GITHUB_REF_NAME" dist/tracker.zip --clobber
