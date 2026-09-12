@@ -200,6 +200,33 @@ The `harness-cats.js` does not hardcode any file: it discovers the `.md` files i
 
 ---
 
+## CI/CD — Git Flow pipeline
+
+GitHub Actions automates the whole delivery chain (workflows under `.github/workflows/`):
+
+```mermaid
+flowchart LR
+  F[feature/*] -- auto PR --> D[develop]
+  D -- push --> R[release/vX.Y.Z + tag]
+  R -- auto PR --> M[main]
+  tag vX.Y.Z -- push --> PUB[(GitHub Release)]
+```
+
+| Workflow | Trigger | Effect |
+|---|---|---|
+| `ci-develop.yml` / `ci-main.yml` | PR + push to `develop` / `main` | JS syntax check, Python compile check, HTTP smoke test |
+| `create-pr-feature-to-develop.yml` | push to `feature/*` | opens/updates PR `feature/*` → `develop` |
+| `promote-develop-to-release.yml` | push to `develop` | derives next `vX.Y.Z` from conventional commits, creates `release/vX.Y.Z` from `main`, bumps `VERSION`, tags, opens PR → `main` |
+| `create-pr-release-to-main.yml` | push to `release/*` | (re)opens PR `release/*` → `main` (out-of-band recovery) |
+| `publish.yml` | push tag `v*` | creates a GitHub Release with the `tracker.zip` bundle |
+
+**Rules to keep the pipeline happy:**
+
+- Create the version commit only via the promote workflow (`VERSION` file at the root is written by it — never edit it by hand).
+- `main` and `develop` are **protected** (PR required + `validate` check). Keep `feature/*` for work; releases flow only through `release/vX.Y.Z`.
+
+---
+
 ## License
 
 Private — for personal study use.
