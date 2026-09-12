@@ -1,81 +1,75 @@
-# TEMPLATE — PLANO PROGRAMÁTICO (`.md`)
+# TEMPLATE — PROGRAMMATIC PLAN (`.md`)
 
-> Use este modelo para criar um plano de estudos de N dias.
-> Copie, cole e edite. O tracker **auto-detecta** por `## FASE`.
+> Use this template to create an N-day study plan.
+> Copy, paste and edit. The tracker **auto-detects** by `## PHASE`.
 
-## 📋 Como funciona
+## How it works
 
-O parser identifica este formato quando encontra linhas que começam com:
+The parser identifies this format when it finds lines like:
 
 ```
-## FASE N — Dias X–Y: Nome da fase
-### Semana N — Título da semana
-- tarefa...
-- **Entregável:** descrição
+## PHASE N — Days X–Y: Phase name
+### Week N — Week title
+- task...
+- **Deliverable:** description
 ```
 
-Regras do auto-detect:
-- **N dias**: o total de dias é derivado do próprio arquivo (`Dias 1–90`, `Dias 1–30`, etc.).
-- **Fases** = `## FASE N — Dias A–B: Nome`.
-- **Semanas** = `### Semana N — Título`.
-- **Tarefas** = bullets `- ...`. Se o texto contiver "mão na massa", vira tarefa prática; senão, leitura.
-- **Entregável da semana** = bullet com `**Entregável:** ...`.
-- Cabeçalhos sem `FASE`/`Semana` (ex.: `#`, `## Introdução`) são ignorados.
+Auto-detect rules:
+- **N days**: the total number of days is derived from the file itself (`Days 1–90`, `Days 1–30`, etc.).
+- **Phases** = `## PHASE N — Days A–B: Name` (Portuguese `FASE` works too).
+- **Weeks** = `### Week N — Title` (Portuguese `Semana` works too).
+- **Tasks** = `- ...` bullets. If the text contains "hands-on", it becomes a practice task; otherwise a reading task.
+- **Weekly deliverable** = a bullet with `**Deliverable:** ...` (or `**Entregável:**`).
+- Headings without `PHASE`/`Week` (e.g. `#`, `## Introduction`) are ignored.
 
 ---
 
-## 📄 Exemplo editável
+## Editable example
 
-# Meu Plano de 60 Dias
+# My 60-Day Plan
 
-## Introdução
+## Introduction
 
-Este texto não vira fase — serve só de contexto. O tracker ignora.
+This text does not become a phase — it is just context. The tracker ignores it.
 
-## FASE 1 — Dias 1–20: Fundamentos
+## PHASE 1 — Days 1–20: Fundamentals
 
-### Semana 1 — Arquitetura Limpa
+### Week 1 — Clean Architecture
 
-- Ler os capítulos 1–4 de Arquitetura Limpa
-- **Entregável:** mapa mental de dependências da arquitetura limpa
+- Read chapters 1–4 of Clean Architecture
+- **Deliverable:** mind map of the dependencies in clean architecture
 
-### Semana 2 — SOLID na prática
+### Week 2 — SOLID
 
-- Implementar 1 exercício de cada princípio SOLID
-- mão na massa: resolver um kata aplicando SOLID
-- **Entregável:** repo com os 5 katas resolvidos
+- watch the course on Single Responsibility Principle
+- Refactor 2 code smells found in your own project (hands-on)
+- **Deliverable:** list of the 5 principles with one example each
 
-## FASE 2 — Dias 21–40: Distribuído
+## PHASE 2 — Days 21–40: System Design
 
-### Semana 3 — Caching
+### Week 1 — Capacity Planning
 
-- Estudar padrões de cache (read-through, write-through)
-- mão na massa: implementar cache com TTL num serviço simples
-- **Entregável:** serviço com cache + teste de carga
+- Read Back-of-the-envelope Calculations
+- **Deliverable:** estimate sheet for a news feed of 1M DAU
 
-### Semana 4 — Sagas e Workflows
+### Week 2 — Data Modeling
 
-- Ler sobre padrão Saga (coreografia vs orquestração)
-- **Entregável:** diagrama de sequência de uma saga
+- Design the schema for a social feed (hands-on)
+- **Deliverable:** ER diagram + SQL script
 
-## FASE 3 — Dias 41–60: System Design
+## PHASE 3 — Days 41–60: Interviews
 
-### Semana 5 — Base de System Design
+### Week 1 — Mock Interviews
 
-- Revisar os 9 passos do método
-- **Entregável:** ficha do primeiro provão resolvida
-
-### Semana 6 — Simulados
-
-- mão na massa: 2 simulados completos com timer
-- **Entregável:** 2 gravações revisadas
+- Schedule 2 mock interviews
+- **Deliverable:** feedback summary after each session
 
 ---
 
-## ⚠️ Checklist antes de importar
+## Validation checklist (before importing)
 
-- [ ] Linhas de fase começam com `## FASE N — Dias A–B:`
-- [ ] Linhas de semana começam com `### Semana N —`
-- [ ] Cada semana tem pelo menos 1 bullet de tarefa
-- [ ] Entregável sempre num bullet `- **Entregável:** ...`
-- [ ] Sem `##` solto sem `FASE` depois das fases (poderia ser confundido)
+- [ ] File uses `## PHASE N — Days X–Y` for each phase.
+- [ ] Each week uses `### Week N` (or `### Semana N`).
+- [ ] Deliverables written as `- **Deliverable:** ...`.
+- [ ] At least one "hands-on" task per phase (optional, becomes practice).
+- [ ] The day range reflects the real total (the tracker derives `N` from it).

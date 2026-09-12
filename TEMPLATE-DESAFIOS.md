@@ -1,138 +1,97 @@
-# TEMPLATE — DESAFIOS MÃO NA MASSA (`.md`)
+# TEMPLATE — HANDS-ON CHALLENGE (`.md`)
 
-> Use este modelo para criar desafios de System Design (ou qualquer
-> desafio de código). O tracker **auto-detecta** por `## ... Desafio N`.
+> Use this template to create practical challenges with atomic tasks.
+> Copy, paste and edit. The tracker **auto-detects** by `## Challenge` (or `## Desafio`).
 
-## 📋 Como funciona
+## How it works
 
-O parser identifica este formato quando encontra linhas que começam com:
+The parser identifies this format when it finds lines like:
 
 ```
-## 🏦 Desafio 1 — Título (tag1 + tag2)
-**Tema:** descrição em uma frase
+## Challenge N — Title (tag1 + tag2)
 
-### 🖊️ Fase A
-- checklist da fase A...
+**Topic:** one-paragraph description of the challenge.
 
-### 🧱 Requisitos funcionais
-- requisito 1...
+### Phase A
+### Functional requirements
+### Required architecture
+### Persistence
+### Tests
+### Containerization
+### README.md
+### Differentiators
+### Acceptance criteria
 ```
 
-As seções `###` viram **tasks atômicas** com critério de aceite e
-dependência automática. O conjunto reconhecido é:
+Rules:
+- **Challenge** = `## Challenge N — Title (tag1 + tag2)`. The tags between parentheses become the challenge "tracks" (trainings).
+- **Description** = the `**Topic:** ...` paragraph right after the challenge header (or `**Tema:**`).
+- **Atomic tasks** = the `###` sections below. Each one becomes a task with **acceptance criteria** and an **automatic dependency** — it only unlocks when the previous tasks are completed.
+- Section headers in Portuguese (`### Fase A`, `### 🧱 Requisitos funcionais`, `### 🧠 Arquitetura obrigatória`, `### 💾 Persistência`, `### 🧪 Testes`, `### 🐳 Containerização`, `### 💡 Diferenciais`, `### ✅ Critérios de aceite`) work too.
 
-| Header da seção          | Task gerada            | Depende de |
-|--------------------------|------------------------|------------|
-| `### 🖊️ Fase A`          | Fase A (gravação)      | —          |
-| `### 🧱 Requisitos funcionais` | Requisitos         | Fase A     |
-| `### 🧠 Arquitetura obrigatória`| Arquitetura         | Requisitos |
-| `### 💾 Persistência`     | Persistência           | Arquitetura|
-| `### 🧪 Testes`           | Testes                 | Persistência |
-| `### 🐳 Containerização`  | Aplicação (Docker)     | Testes     |
-| `### 📚 README.md`        | README                 | Aplicação  |
-| `### 💡 Diferenciais`     | Diferenciais (opcional)| —          |
-| `### ✅ Critérios de aceite`| Critérios             | Aplicação  |
-
-Se o `.md` não tiver nenhuma seção mapeada, o parser cria automaticamente
-2 tasks padrão (Fase A + Implementar) para não quebrar o desafio.
+> **Important:** do not use `##` with a different title in the middle of the challenge list — the parser ends the list there. `###` sections with other names are kept as text but do not become tasks.
 
 ---
 
-## 📄 Exemplo editável
+## Editable example
 
-# Desafios — Mão na Massa
+## 🏦 Challenge 1 — News Feed (Hexagonal + DDD + SOLID)
 
-## 🏦 Desafio 1 — News Feed (Hexagonal + DDD + SOLID)
+**Topic:** Feed with followers and asymmetric read/write — you may choose any other domain.
 
-**Tema:** Feed de notícias com followers, caching e leitura/escrita assimétrica.
+### Phase A
 
-### 🖊️ Fase A
+Walk through the design out loud in up to ~10 minutes, without code: entities, endpoints, events.
 
-- Gravar 10 min explicando requisitos, escala e arquitetura antes de codar
-- Autoavaliar contra o checklist dos 8 passos
+### Functional requirements
 
-### 🧱 Requisitos funcionais
+- A user creates a post; followers receive it in their feed.
+- A user can follow/unfollow another user.
+- Read path is optimized for millions of reads; write path is consistent.
 
-- Usuário cria post; followers recebem no feed
-- Timeline: leitura pesada, escrita leve (read-heavy)
+### Required architecture
 
-### 🧠 Arquitetura obrigatória
+- Hexagonal: `domain`, `application`, `infrastructure`, `interfaces` packages.
+- Domain layer has no framework dependency (no Spring on domain).
+- Explicit SOLID: state the engineering practice chosen and where it applies.
 
-- Camadas domain/application/infrastructure/interfaces separadas
-- Domínio sem Spring (só regras puras)
+### Persistence
 
-### 💾 Persistência
+- Versioned migrations (Flyway).
+- H2 for local tests + PostgreSQL via Testcontainers.
 
-- Migrations versionadas (Flyway)
-- H2 local + PostgreSQL via Testcontainers
+### Tests
 
-### 🧪 Testes
+- Unit tests on domain/application.
+- Integration tests with real database.
+- Event tests (even what happened, what is expected).
 
-- Unit nos casos de uso do domínio
-- Integração de repositório + eventos
-- Coverage >= 80%
+### Containerization
 
-### 🐳 Containerização
+- `Dockerfile` + `docker-compose.yml` running the full stack end to end.
+- If the evaluation environment already provides it, document the run commands.
 
-- Dockerfile multi-stage
-- docker compose up sobe a aplicação ponta a ponta
+### README.md
 
-### 📚 README.md
+- Full README: architecture diagram, how to run, how to test, design decisions.
 
-- Como rodar, arquitetura e decisões de design
+### Differentiators
 
-### 💡 Diferenciais
+- (Optional) choose at least one: observability (metrics/tracing), pagination/cursor, cache with Redis, event outbox, CQRS, idempotency, resilience patterns.
 
-- Fan-out on write com fila (ex.: Kafka) como bônus
+### Acceptance criteria
 
-### ✅ Critérios de aceite
-
-- Post de usuário aparece no feed de um follower em menos de 5s
-- Testes verdes rodando com `mvn test`
-
----
-
-## 🏦 Desafio 2 — Cart Service (Eventos + Sagas)
-
-**Tema:** Carrinho de compras com saga de checkout e compensação.
-
-### 🖊️ Fase A
-
-- Gravar fluxo completo do checkout em voz alta
-
-### 🧱 Requisitos funcionais
-
-- Adicionar/remover itens no carrinho
-- Checkout dispara saga (reserva de estoque → pagamento → confirmação)
-
-### 🧠 Arquitetura obrigatória
-
-- Sagas coreografadas com eventos de domínio
-- Outbox pattern para publicação confiável de eventos
-
-### 💾 Persistência
-
-- Event store / outbox table versionada
-
-### 🧪 Testes
-
-- Teste de saga: falha no pagamento compensa a reserva de estoque
-
-### 🐳 Containerização
-
-- docker compose com app + broker (Kafka/RabbitMQ)
-
-### ✅ Critérios de aceite
-
-- Falha no pagamento desfaz a reserva (compensação provada por teste)
+- All functional requirements covered (test proves it).
+- `docker compose up` brings the application up end to end.
+- Test suite green with coverage >= 80%.
+- Domain independent of Spring (runs without framework context).
 
 ---
 
-## ⚠️ Checklist antes de importar
+## Validation checklist (before importing)
 
-- [ ] Desafios começam com `## 🏦 Desafio N — Título (tag1 + tag2)`
-- [ ] Tags entre parênteses separadas por `+` (viram "trilhas" do desafio)
-- [ ] Descrição em `**Tema:** ...`
-- [ ] Usar os headers `###` da tabela acima para virar tasks atômicas
-- [ ] NÃO usar `## Outro título` no meio da lista de desafios (encerra a lista)
-- [ ] Para substituir a lista atual: todos os desafios precisam estar concluídos (gate)
+- [ ] File uses `## Challenge N — Title (tag1 + tag2)`.
+- [ ] `**Topic:**` present right after the challenge header.
+- [ ] Sections use only the headers listed above (`###`).
+- [ ] No `##` with a different title in the middle of the challenge list.
+- [ ] Challenges are all completed in the tracker before importing a new list.

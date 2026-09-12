@@ -26,8 +26,8 @@ const DEFAULT_CHALLENGE_METHOD = {
 //  DETECÇÃO DE TIPO
 // ─────────────────────────────────────────────────────────────
 function detectContentType(text) {
-  if (/^##\s*.*Desafio\s*\d/m.test(text))  return 'mao-na-massa';
-  if (/^##\s*FASE/m.test(text))            return 'programatico';
+  if (/^##\s*.*(?:Desafio|Challenge)\s*\d/m.test(text))  return 'mao-na-massa';
+  if (/^##\s*(?:FASE|PHASE)/m.test(text))                return 'programatico';
   return null;
 }
 
@@ -37,7 +37,7 @@ function sanitizeId(s) {
 }
 
 function parseDaysRange(s) {
-  const m = String(s).match(/dias?\s*(\d+)\s*[–—\-:]\s*(\d+)/i);
+  const m = String(s).match(/(?:dias?|days?)\s*(\d+)\s*[–—\-:]\s*(\d+)/i);
   return m ? [parseInt(m[1]), parseInt(m[2])] : null;
 }
 
@@ -59,7 +59,7 @@ function parseProgrammaticMD(text, filename) {
     if (!line) continue;
 
     // Fase
-    const fm = line.match(/^##\s*FASE\s*(\d+)\s*[—\-–:]\s*(.*)$/i);
+    const fm = line.match(/^##\s*(?:FASE|PHASE)\s*(\d+)\s*[—\-–:]\s*(.*)$/i);
     if (fm) {
       curPhase = { id: phases.length + 1, name: fm[2].trim(), icon: '📚', days: '', color: ['emerald','amber','violet','rose'][(phases.length) % 4], weeks: [] };
       const rng = parseDaysRange(fm[2]);
@@ -70,7 +70,7 @@ function parseProgrammaticMD(text, filename) {
     }
 
     // Semana
-    const wm = line.match(/^###\s*Semana\s*(\d+)\s*[—\-–:]\s*(.*)$/i);
+    const wm = line.match(/^###\s*(?:Semana|Week)\s*(\d+)\s*[—\-–:]\s*(.*)$/i);
     if (wm && curPhase) {
       curWeek = {
         id: parseInt(wm[1]),
@@ -91,12 +91,12 @@ function parseProgrammaticMD(text, filename) {
     if (bm && curWeek) {
       const content = bm[1].trim();
       if (!content) continue;
-      const dm = content.match(/^\*\*Entregável[:\s]*\*\*(.*)$/i) || content.match(/^Entregável[:\s]*[\*]*\s*(.*)$/i);
+      const dm = content.match(/^\*\*(?:Entregável|Deliverable)[:\s]*\*\*(.*)$/i) || content.match(/^(?:Entregável|Deliverable)[:\s]*[\*]*\s*(.*)$/i);
       if (dm && dm[1].trim()) {
         curWeek.deliverable = { id: curWeek.id + '-d', text: dm[1].trim().replace(/\*\*/g,''), icon: '🎯' };
       } else {
         // pula linhas auxiliares (tabelas, regras etc. não entram)
-        curWeek.tasks.push({ id: curWeek.id + '-' + (curWeek.tasks.length + 1), text: content.replace(/\*\*/g,''), type: /m[ãa]o na massa/i.test(content) ? 'pratica' : 'leitura' });
+        curWeek.tasks.push({ id: curWeek.id + '-' + (curWeek.tasks.length + 1), text: content.replace(/\*\*/g,''), type: /(?:m[ãa]o na massa|hands?[-–— ]?on)/i.test(content) ? 'pratica' : 'leitura' });
       }
     }
   }
@@ -166,23 +166,23 @@ function parseProgrammaticMD(text, filename) {
 //  no padrão tasks.md: titulo + descricao + dependencias + criterio.
 // ─────────────────────────────────────────────────────────────
 const MD_SECTION_TASKS = [
-  { match: /^###\s*🖊️?\s*Fase\s*A/i,        key: 'Fase A', title: 'Fase A — System Design (em voz alta, sem código)', icon: '🖊️',
+  { match: /^###\s*(?:🖊️)?\s*(?:Fase\s*A|Phase\s*A)\b/i, key: 'Fase A', title: 'Fase A — System Design (em voz alta, sem código)', icon: '🖊️',
     criteria: 'Gravação feita e autoavaliada contra o checklist dos 8 passos.', deps: [] },
-  { match: /^###\s*🧱\s*Requisitos\s*funcionais/i, key: 'Requisitos', title: 'Modelar requisitos (entidades, endpoints, eventos)', icon: '🧱',
+  { match: /^###\s*(?:🧱)?\s*(?:Requisitos\s*funcionais|Functional\s*[Rr]equirements|[Rr]equirements)/i, key: 'Requisitos', title: 'Modelar requisitos (entidades, endpoints, eventos)', icon: '🧱',
     criteria: 'Requisitos funcionais do desafio cobertos no código.', deps: ['Fase A'] },
-  { match: /^###\s*🧠\s*Arquitetura\s*obrigatória/i, key: 'Arquitetura', title: 'Definir arquitetura (camadas hexagonal + SOLID explícito)', icon: '🧠',
+  { match: /^###\s*(?:🧠)?\s*(?:Arquitetura\s*obrigatória|[Rr]equired\s*[Aa]rchitecture|[Aa]rchitecture)/i, key: 'Arquitetura', title: 'Definir arquitetura (camadas hexagonal + SOLID explícito)', icon: '🧠',
     criteria: 'Pacotes domain/application/infrastructure/interfaces separados; domínio sem Spring.', deps: ['Requisitos'] },
-  { match: /^###\s*💾\s*Persistência/i,       key: 'Persistência', title: 'Persistência + migrations (Flyway/JPA)', icon: '💾',
+  { match: /^###\s*(?:💾)?\s*(?:Persistência|Persistence)/i, key: 'Persistência', title: 'Persistência + migrations (Flyway/JPA)', icon: '💾',
     criteria: 'Migrations versionadas; H2 local + PostgreSQL/Testcontainers.', deps: ['Arquitetura'] },
-  { match: /^###\s*🧪\s*Testes/i,             key: 'Testes', title: 'Testes (unit + integração + eventos)', icon: '🧪',
+  { match: /^###\s*(?:🧪)?\s*(?:Testes|Tests)/i, key: 'Testes', title: 'Testes (unit + integração + eventos)', icon: '🧪',
     criteria: 'Suite de testes verde com coverage >= 80%.', deps: ['Persistência'] },
-  { match: /^###\s*🐳\s*Containerização/i,    key: 'Aplicação', title: 'Docker (Dockerfile + docker-compose)', icon: '🐳',
+  { match: /^###\s*(?:🐳)?\s*(?:Containerização|Containerization)/i, key: 'Aplicação', title: 'Docker (Dockerfile + docker-compose)', icon: '🐳',
     criteria: 'docker compose up sobe a aplicação de ponta a ponta.', deps: ['Testes'] },
-  { match: /^###\s*📚\s*README\.md/i,         key: 'README', title: 'README com arquitetura e como rodar', icon: '📚',
+  { match: /^###\s*(?:📚)?\s*README\.md/i, key: 'README', title: 'README com arquitetura e como rodar', icon: '📚',
     criteria: 'README completo conforme a seção do desafio.', deps: ['Aplicação'] },
-  { match: /^###\s*💡\s*Diferenciais/i,       key: 'Diferenciais', title: '(Opcional) Diferenciais técnicos', icon: '💡',
+  { match: /^###\s*(?:💡)?\s*(?:Diferenciais|Differentiators)/i, key: 'Diferenciais', title: '(Opcional) Diferenciais técnicos', icon: '💡',
     criteria: 'Pelo menos 1 diferencial implementado.', deps: [] },
-  { match: /^###\s*✅\s*Critérios\s*de\s*aceite/i, key: 'Critérios', title: 'Validar critérios de aceite', icon: '✅',
+  { match: /^###\s*(?:✅)?\s*(?:Critérios\s*de\s*aceite|Acceptance\s*[Cc]riteria)/i, key: 'Critérios', title: 'Validar critérios de aceite', icon: '✅',
     criteria: 'Cada critério de aceite do desafio atendido (teste prova).', deps: ['Aplicação'] },
 ];
 
@@ -203,7 +203,7 @@ function parseChallengesMD(text, filename) {
     if (!line) continue;
 
     // Novo desafio
-    const cm = line.match(/^##\s*(?:[^\w]+\s*)*Desafio\s*(\d+)\s*[—\-–:]\s*(.*?)(?:\s*\(([^)]*)\))?\s*$/i);
+    const cm = line.match(/^##\s*(?:[^\w]+\s*)*(?:Desafio|Challenge)\s*(\d+)\s*[—\-–:]\s*(.*?)(?:\s*\(([^)]*)\))?\s*$/i);
     if (cm) {
       flushSection();
       const tags = (cm[3] || '').split(/\+|,|·|\s*&\s*/).map(s => s.trim()).filter(Boolean);
@@ -228,7 +228,7 @@ function parseChallengesMD(text, filename) {
 
     // Descrição do desafio (parágrafos antes da primeira seção)
     if (curSection === null && !/^###\s/.test(line)) {
-      const dm = line.match(/^\*\*Tema[:\s]*\*\*(.*)$/i);
+      const dm = line.match(/^\*\*(?:Tema|Topic)[:\s]*\*\*(.*)$/i);
       if (dm) cur.description = dm[1].trim();
       else if (!cur.description && /^[A-Za-zÀ-ÿ].{10,}/.test(line)) cur.description += (cur.description ? ' ' : '') + line;
       continue;
