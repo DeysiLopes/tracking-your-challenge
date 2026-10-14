@@ -10,9 +10,10 @@ import {
   getCurrentXPLevel, getEarnedXP, getNextXPLevel, getPlanXP, getTotalXP,
   hasPlanContent, isBadgeUnlocked,
 } from '../core/business/progress';
+import { catName } from '../core/business/cats';
 
 export const DashboardPage: React.FC = () => {
-  const { ctx, plan, state, mascot } = useTracker();
+  const { ctx, plan, state, mascot, showOffCat } = useTracker();
 
   const day = getCurrentDay(ctx);
   const totalXP = getTotalXP(ctx);
@@ -57,7 +58,13 @@ export const DashboardPage: React.FC = () => {
               ? { background: `conic-gradient(var(--amber) 0deg, var(--rose) ${pct * 3.6}deg, var(--bg-hover) ${pct * 3.6}deg)` }
               : undefined}
           >
-            <div className="xp-cat dashboard-cat" id="xp-cat">
+            <div
+              className="xp-cat dashboard-cat cat-clickable"
+              id="xp-cat"
+              role="button"
+              title={`${catName(mascot.level)} — clique pra ver o gato se exibir 🐾`}
+              onClick={() => showOffCat()}
+            >
               <PixelCat level={mascot.level} className={`cat-idle cat-tier-${mascot.level}`} />
             </div>
             <span className="xp-level-num" id="xp-level-num">{curLevel.level}</span>
@@ -115,7 +122,12 @@ export const DashboardPage: React.FC = () => {
             <div className="challenge-badges-grid">
               {challengeBadges.map((b) => (
                 <div key={b.challengeId} className="challenge-badge-card">
-                  <div className="challenge-badge-cat">
+                  <div
+                    className="challenge-badge-cat cat-clickable"
+                    role="button"
+                    title={`${catName(b.skin)} — clique pra ver o gato se exibir 🐾`}
+                    onClick={() => showOffCat(b.skin)}
+                  >
                     <PixelCat level={b.skin} size={48} className={`cat-tier-${b.skin}`} />
                   </div>
                   <div className="challenge-badge-info">

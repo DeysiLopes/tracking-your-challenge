@@ -22,7 +22,7 @@ const NAV_ITEMS = [
 ];
 
 export const Sidebar: React.FC<Props> = ({ onOpenConfig }) => {
-  const { ctx, plan, mascot, driveStatus, connectDrive, disconnectDrive, toast, celebrateLevel } = useTracker();
+  const { ctx, plan, mascot, driveStatus, connectDrive, disconnectDrive, toast, showOffCat } = useTracker();
   const [driveBusy, setDriveBusy] = useState(false);
 
   const day = getCurrentDay(ctx);
@@ -54,8 +54,8 @@ export const Sidebar: React.FC<Props> = ({ onOpenConfig }) => {
         <button
           className="logo-icon logo-cat-btn"
           id="logo-icon"
-          title={`${catName(mascot.level)} — clique pra comemorar 🐾`}
-          onClick={celebrateLevel}
+          title={`${catName(mascot.level)} — clique pra ver o gato se exibir 🐾`}
+          onClick={() => showOffCat()}
         >
           <PixelCat level={mascot.level} size={32} className={`logo-cat cat-tier-${mascot.level}`} />
         </button>

@@ -54,6 +54,8 @@ export interface Mascot {
   confettiKey: number;
   /** nível alcançado num rank-up recente (overlay central); null = sem comemoração ativa */
   levelUp: number | null;
+  /** skin em "modo estrela" (clique no gato — giro no centro); null = inativo */
+  showoff: number | null;
 }
 
 export interface DriveStatus { connected: boolean; user?: string }
@@ -74,6 +76,8 @@ interface TrackerContextValue {
   toast: (msg: string) => void;
   dismissLevelUp: () => void;
   celebrateLevel: () => void;
+  /** gatinho "se exibe" no centro: giro + pulinho, qualquer skin (default = nível atual) */
+  showOffCat: (level?: number) => void;
   setTheme: (t: string) => void;
   setStartDate: (d: string) => void;
   toggleTask: (id: string, type: 'tasks' | 'deliverables') => void;
@@ -168,7 +172,7 @@ export const TrackerProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [toastMsg, setToastMsg] = useState<{ id: number; text: string } | null>(null);
   const [theme, setTheme_] = useState('catppuccin');
   const [driveStatus, setDriveStatus] = useState<DriveStatus>({ connected: false });
-  const [mascot, setMascot] = useState<Mascot>({ level: 1, anim: 'idle', saying: null, crying: false, confettiKey: 0, levelUp: null });
+  const [mascot, setMascot] = useState<Mascot>({ level: 1, anim: 'idle', saying: null, crying: false, confettiKey: 0, levelUp: null, showoff: null });
 
   const stateRef = useRef(state);
   const snapshotRef = useRef(snapshot);
@@ -597,10 +601,10 @@ export const TrackerProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const dismissLevelUp = useCallback(() => {
     if (levelUpTimer.current) clearTimeout(levelUpTimer.current);
-    setMascot((m) => ({ ...m, levelUp: null }));
+    setMascot((m) => ({ ...m, levelUp: null, showoff: null }));
   }, []);
 
-  // replay manual da comemoração (clicar no gatinho do logo)
+  // replay manual da comemoração de rank (clicar no gatinho do logo)
   const celebrateLevel = useCallback(() => {
     const lvl = getCurrentXPLevel(totalXP).level;
     mascotCelebrate();
@@ -609,10 +613,17 @@ export const TrackerProvider: React.FC<{ children: React.ReactNode }> = ({ child
     levelUpTimer.current = setTimeout(() => setMascot((m) => ({ ...m, levelUp: null })), 4500);
   }, [totalXP, mascotCelebrate]);
 
+  // "modo estrela": o gato vem pro centro, gira e dá um pulinho
+  const showOffCat = useCallback((level?: number) => {
+    setMascot((m) => ({ ...m, showoff: level ?? m.level }));
+    if (levelUpTimer.current) clearTimeout(levelUpTimer.current);
+    levelUpTimer.current = setTimeout(() => setMascot((m) => ({ ...m, showoff: null })), 2600);
+  }, []);
+
   const value: TrackerContextValue = {
     loaded, ctx, plan, challengesData, state, weeks, challenges,
     mascot, theme, driveStatus,
-    toast, dismissLevelUp, celebrateLevel, setTheme, setStartDate,
+    toast, dismissLevelUp, celebrateLevel, showOffCat, setTheme, setStartDate,
     toggleTask, toggleChallengeTask, registerAttempt, toggleChallengeDone,
     markAllInWeek, saveWeekNote, saveChallengeNote, clearChallengeNotes,
     importFile, connectDrive, disconnectDrive,

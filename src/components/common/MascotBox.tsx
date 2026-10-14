@@ -9,13 +9,19 @@ import { Confetti } from './Confetti';
 import { catName } from '../../core/business/cats';
 
 export const MascotBox: React.FC = () => {
-  const { mascot } = useTracker();
+  const { mascot, showOffCat } = useTracker();
   const animCls = mascot.anim === 'lick' ? 'cat-lick' : mascot.anim === 'celebrate' ? 'cat-celebrate' : 'cat-idle';
   const cls = `cat-svg ${animCls} cat-tier-${mascot.level}` + (mascot.crying && mascot.anim === 'idle' ? ' cat-crying' : '');
 
   return (
     <div className="mascot-box" id="mascot-box">
-      <div className="mascot-cat" id="mascot-cat">
+      <div
+        className="mascot-cat"
+        id="mascot-cat"
+        role="button"
+        title={`${catName(mascot.level)} — clique pra ver o gato se exibir 🐾`}
+        onClick={() => showOffCat()}
+      >
         <PixelCat level={mascot.level} className={cls.replace('cat-svg', '').trim()} />
       </div>
       <div className="mascot-name" id="mascot-name">{catName(mascot.level)}</div>
