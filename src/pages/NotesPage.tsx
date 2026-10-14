@@ -1,93 +1,110 @@
 /**
- * NotesPage — notas por semana e tentativas de desafio, editáveis
- * (equivalente ao #view-notes + selectNoteWeek/Challenge do legado).
+ * NotesPage (/notas) — índice de notas no estilo Obsidian:
+ * todas as semanas e desafios são "arquivos" possíveis; clicar
+ * abre o caderno fullscreen (NotebookEditor) com Markdown,
+ * modo leitura e exportação .md.
  */
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useTracker } from '../hooks/useTracker';
 import { EmptyNotice } from '../components/common/EmptyNotice';
+import { NotebookEditor } from '../components/common/NotebookEditor';
 import { getChallengeState, hasChallengesContent, hasPlanContent } from '../core/business/progress';
 
 type NoteSel = { type: 'week'; id: number } | { type: 'challenge'; id: string } | null;
 
+interface Entry {
+  type: 'week' | 'challenge';
+  id: number | string;
+  label: string;
+  title: string;
+  subtitle: string;
+  hasNote: boolean;
+  preview: string;
+}
+
 export const NotesPage: React.FC<{ selectedWeekId?: number | null; onConsumed?: () => void }> = ({ selectedWeekId, onConsumed }) => {
   const { ctx, challenges, state, weeks, saveWeekNote, saveChallengeNote, clearChallengeNotes, toast } = useTracker();
   const [sel, setSel] = useState<NoteSel>(null);
-  const [draft, setDraft] = useState('');
-  const editorRef = useRef<HTMLTextAreaElement>(null);
+  const [query, setQuery] = useState('');
 
-  // Entries: semanas com nota + desafios com tentativas (mesma regra do legado)
-  const entries: { type: 'week' | 'challenge'; id: number | string; title: string; subtitle: string; label: string }[] = [];
-  if (hasPlanContent(ctx)) {
-    weeks.forEach((week) => {
-      const noteText = state.notes[week.id] && state.notes[week.id].trim();
-      if (noteText) {
-        entries.push({ type: 'week', id: week.id, title: `Semana ${week.id} — ${week.title}`, subtitle: week.days, label: `Semana ${week.id}` });
-      }
-    });
-  }
-  if (hasChallengesContent(ctx)) {
-    challenges.forEach((c) => {
-      const cs = getChallengeState(state, c.id);
-      if (cs.attempts && cs.attempts.length > 0) {
-        entries.push({
-          type: 'challenge', id: c.id,
-          title: `Desafio ${String(c.num).padStart(2, '0')} — ${c.title}`,
-          subtitle: (c.trains || []).join(', '),
-          label: `Desafio ${String(c.num).padStart(2, '0')}`,
+  // Cada semana e desafio é um "arquivo" de nota — com ou sem texto.
+  const entries = useMemo<Entry[]>(() => {
+    const list: Entry[] = [];
+    if (hasPlanContent(ctx)) {
+      weeks.forEach((week) => {
+        const note = (state.notes[week.id] || '').trim();
+        list.push({
+          type: 'week', id: week.id,
+          label: `Semana ${week.id}`,
+          title: week.title,
+          subtitle: week.days,
+          hasNote: !!note,
+          preview: note.split('\n').find((l) => l.trim()) || '',
         });
-      }
-    });
-  }
-
-  const loadSel = (s: NoteSel) => {
-    setSel(s);
-    if (!s) { setDraft(''); return; }
-    if (s.type === 'week') setDraft(state.notes[s.id] || '');
-    else {
-      const cs = getChallengeState(state, s.id);
-      const last = cs.attempts && cs.attempts.length ? cs.attempts[cs.attempts.length - 1].text : '';
-      setDraft(last || '');
+      });
     }
-  };
+    if (hasChallengesContent(ctx)) {
+      challenges.forEach((c) => {
+        const cs = getChallengeState(state, c.id);
+        const last = cs.attempts && cs.attempts.length ? cs.attempts[cs.attempts.length - 1].text : '';
+        list.push({
+          type: 'challenge', id: c.id,
+          label: `Desafio ${String(c.num).padStart(2, '0')}`,
+          title: c.title,
+          subtitle: (c.trains || []).join(', '),
+          hasNote: !!last.trim(),
+          preview: last.split('\n').find((l) => l.trim()) || '',
+        });
+      });
+    }
+    return list;
+  }, [ctx, weeks, challenges, state]);
 
-  // "Editar Nota" vindo do WeekModal: seleciona a semana aqui
+  // "Editar Nota" vindo do WeekModal abre o caderno direto na semana
   useEffect(() => {
     if (selectedWeekId != null) {
-      loadSel({ type: 'week', id: selectedWeekId });
+      setSel({ type: 'week', id: selectedWeekId });
       onConsumed && onConsumed();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedWeekId]);
+  }, [selectedWeekId, onConsumed]);
+
+  const filtered = entries.filter((e) =>
+    !query || `${e.label} ${e.title}`.toLowerCase().includes(query.toLowerCase()));
 
   const selWeek = sel && sel.type === 'week' ? weeks.find((w) => w.id === sel.id) : null;
   const selChallenge = sel && sel.type === 'challenge' ? challenges.find((c) => c.id === sel.id) : null;
 
-  const saveNote = () => {
-    const txt = draft.trim();
-    if (sel && sel.type === 'week') {
-      saveWeekNote(sel.id, txt);
+  const initialText = (): string => {
+    if (!sel) return '';
+    if (sel.type === 'week') return state.notes[sel.id] || '';
+    const cs = getChallengeState(state, sel.id);
+    return cs.attempts && cs.attempts.length ? cs.attempts[cs.attempts.length - 1].text : '';
+  };
+
+  const save = (text: string) => {
+    if (!sel) return;
+    if (sel.type === 'week') {
+      saveWeekNote(sel.id, text.trim());
       toast('Nota salva! 💾');
       return;
     }
-    if (sel && sel.type === 'challenge') {
-      if (!txt) { toast('Escreva algo antes de salvar! ✏️'); return; }
-      saveChallengeNote(sel.id, txt);
-      toast('Nota/Tentativa do desafio salva! 💾');
-    }
+    const txt = text.trim();
+    if (!txt) { toast('Escreva algo antes de salvar! ✏️'); return; }
+    saveChallengeNote(sel.id, txt);
+    toast('Nota/Tentativa do desafio salva! 💾');
   };
 
-  const clearNote = () => {
-    if (sel && sel.type === 'week') {
-      setDraft('');
+  const clear = () => {
+    if (!sel) return;
+    if (sel.type === 'week') {
       saveWeekNote(sel.id, '');
       toast('Nota apagada 🗑️');
+      setSel(null);
       return;
     }
-    if (sel && sel.type === 'challenge') {
-      setDraft('');
-      clearChallengeNotes(sel.id);
-      toast('Notas/tentativas do desafio apagadas 🗑️');
-    }
+    clearChallengeNotes(sel.id);
+    toast('Notas/tentativas do desafio apagadas 🗑️');
+    setSel(null);
   };
 
   return (
@@ -95,58 +112,54 @@ export const NotesPage: React.FC<{ selectedWeekId?: number | null; onConsumed?: 
       <header className="page-header">
         <div>
           <h1>Minhas Notas</h1>
-          <p className="page-subtitle">Anotações por semana, exportáveis para o Obsidian.</p>
+          <p className="page-subtitle">Markdown por semana e desafio — clique pra abrir o caderno.</p>
         </div>
+        <input
+          className="notes-search"
+          type="search"
+          placeholder="🔍 buscar nota…"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
       </header>
 
-      <div className="notes-layout">
-        <div className="notes-sidebar-list" id="notes-week-list">
-          {!entries.length ? (
-            <EmptyNotice title="Nenhuma nota registrada">
-              Escreva notas nas views de Semana ou Desafio e elas aparecerão aqui para edição.
-            </EmptyNotice>
-          ) : entries.map((en) => (
-            <div
+      {!entries.length ? (
+        <EmptyNotice title="Nenhuma nota possível ainda">
+          Importe um plano ou desafios (.md) pra começar a escrever notas.
+        </EmptyNotice>
+      ) : (
+        <div className="notes-grid">
+          {filtered.map((en) => (
+            <button
               key={`${en.type}-${en.id}`}
-              className={`note-week-item${sel && sel.type === en.type && String(sel.id) === String(en.id) ? ' active' : ''}`}
-              onClick={() => loadSel({ type: en.type, id: en.id } as NoteSel)}
+              className={`note-card${en.hasNote ? ' has-note' : ''}`}
+              onClick={() => setSel({ type: en.type, id: en.id } as NoteSel)}
             >
-              <div className="nwi-week">{en.label}</div>
-              <div className="nwi-title">
-                {en.title.replace(/^Semana \d+ — /, '').replace(/^Desafio \d+ — /, '')}
-                <div className="nwi-sub">{en.subtitle}</div>
+              <div className="nc-top">
+                <span className="nc-label">{en.label}</span>
+                <span className={`nc-dot${en.hasNote ? ' on' : ''}`} title={en.hasNote ? 'com nota' : 'sem nota'} />
               </div>
-            </div>
+              <div className="nc-title">{en.title}</div>
+              <div className="nc-sub">{en.subtitle}</div>
+              <div className="nc-preview">{en.hasNote ? en.preview : 'Escrever nota…'}</div>
+            </button>
           ))}
+          {!filtered.length && (
+            <EmptyNotice title="Nada encontrado">Nenhuma nota bate com “{query}”.</EmptyNotice>
+          )}
         </div>
-        <div className="notes-editor-area">
-          <div className="notes-editor-header" id="notes-editor-header">
-            {selWeek ? (
-              <>
-                <strong>Semana {selWeek.id} — {selWeek.title}</strong>
-                <span style={{ color: 'var(--text-muted)', fontWeight: 400, fontSize: 12, marginLeft: 8 }}>{selWeek.days}</span>
-              </>
-            ) : selChallenge ? (
-              <strong>Desafio {String(selChallenge.num).padStart(2, '0')} — {selChallenge.title}</strong>
-            ) : (
-              <span>Selecione uma semana ao lado →</span>
-            )}
-          </div>
-          <textarea
-            className="notes-editor"
-            id="notes-editor"
-            ref={editorRef}
-            placeholder={'Escreva aqui suas anotações em Markdown...\nUse [[links]] para conectar assuntos no Obsidian.'}
-            disabled={!sel}
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-          />
-          <div className="notes-actions">
-            <button className="btn btn-secondary" disabled={!sel} onClick={clearNote}>🗑 Limpar</button>
-            <button className="btn btn-primary" disabled={!sel} onClick={saveNote}>💾 Salvar Nota</button>
-          </div>
-        </div>
-      </div>
+      )}
+
+      {sel && (selWeek || selChallenge) && (
+        <NotebookEditor
+          title={selWeek ? `Semana ${selWeek.id} — ${selWeek.title}` : `Desafio ${String(selChallenge!.num).padStart(2, '0')} — ${selChallenge!.title}`}
+          subtitle={selWeek ? selWeek.days : (selChallenge!.trains || []).join(', ')}
+          initial={initialText()}
+          onSave={save}
+          onClear={clear}
+          onClose={() => setSel(null)}
+        />
+      )}
     </section>
   );
 };

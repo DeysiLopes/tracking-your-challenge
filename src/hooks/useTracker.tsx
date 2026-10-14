@@ -52,6 +52,8 @@ export interface Mascot {
   saying: string | null;
   crying: boolean;
   confettiKey: number;
+  /** nível alcançado num rank-up recente (overlay central); null = sem comemoração ativa */
+  levelUp: number | null;
 }
 
 export interface DriveStatus { connected: boolean; user?: string }
@@ -70,6 +72,7 @@ interface TrackerContextValue {
   theme: string;
   driveStatus: DriveStatus;
   toast: (msg: string) => void;
+  dismissLevelUp: () => void;
   setTheme: (t: string) => void;
   setStartDate: (d: string) => void;
   toggleTask: (id: string, type: 'tasks' | 'deliverables') => void;
@@ -164,7 +167,7 @@ export const TrackerProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [toastMsg, setToastMsg] = useState<{ id: number; text: string } | null>(null);
   const [theme, setTheme_] = useState('catppuccin');
   const [driveStatus, setDriveStatus] = useState<DriveStatus>({ connected: false });
-  const [mascot, setMascot] = useState<Mascot>({ level: 1, anim: 'idle', saying: null, crying: false, confettiKey: 0 });
+  const [mascot, setMascot] = useState<Mascot>({ level: 1, anim: 'idle', saying: null, crying: false, confettiKey: 0, levelUp: null });
 
   const stateRef = useRef(state);
   const snapshotRef = useRef(snapshot);
@@ -173,6 +176,7 @@ export const TrackerProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const mascotTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sayTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const levelUpTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   stateRef.current = state;
   snapshotRef.current = snapshot;
@@ -326,6 +330,10 @@ export const TrackerProvider: React.FC<{ children: React.ReactNode }> = ({ child
     if (lvl > lastLevelRef.current) {
       mascotCelebrate();
       mascotSay(`Você virou ${catName(lvl)}! 🐾`, 3200);
+      // rank-up vai pro centro da tela (acima de qualquer modal)
+      setMascot((m) => ({ ...m, levelUp: lvl }));
+      if (levelUpTimer.current) clearTimeout(levelUpTimer.current);
+      levelUpTimer.current = setTimeout(() => setMascot((m) => ({ ...m, levelUp: null })), 4500);
     }
     lastLevelRef.current = lvl;
     setMascot((m) => ({ ...m, level: lvl }));
@@ -578,10 +586,15 @@ export const TrackerProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   }, []);
 
+  const dismissLevelUp = useCallback(() => {
+    if (levelUpTimer.current) clearTimeout(levelUpTimer.current);
+    setMascot((m) => ({ ...m, levelUp: null }));
+  }, []);
+
   const value: TrackerContextValue = {
     loaded, ctx, plan, challengesData, state, weeks, challenges,
     mascot, theme, driveStatus,
-    toast, setTheme, setStartDate,
+    toast, dismissLevelUp, setTheme, setStartDate,
     toggleTask, toggleChallengeTask, registerAttempt, toggleChallengeDone,
     markAllInWeek, saveWeekNote, saveChallengeNote, clearChallengeNotes,
     importFile, connectDrive, disconnectDrive,

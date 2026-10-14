@@ -15,9 +15,9 @@ interface Props {
 
 const NAV_ITEMS = [
   { to: '/', icon: '⚡', label: 'Dashboard', end: true },
-  { to: '/plan', icon: '📋', label: 'Plano Semanal', end: false },
-  { to: '/notes', icon: '📝', label: 'Minhas Notas', end: false },
-  { to: '/challenges', icon: '⚔️', label: 'Desafios', end: false, xp: true },
+  { to: '/plano', icon: '📋', label: 'Plano Semanal', end: false },
+  { to: '/notas', icon: '📝', label: 'Minhas Notas', end: false },
+  { to: '/desafios', icon: '⚔️', label: 'Desafios', end: false, xp: true },
 ];
 
 export const Sidebar: React.FC<Props> = ({ onOpenConfig }) => {

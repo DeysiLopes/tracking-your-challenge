@@ -9,6 +9,7 @@ import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
 import { TrackerProvider, useTracker } from './hooks/useTracker';
 import { Sidebar } from './components/common/Sidebar';
 import { ConfigModal } from './components/modals/ConfigModal';
+import { LevelUpOverlay } from './components/common/LevelUpOverlay';
 import { WeekModal } from './components/modals/WeekModal';
 import { ChallengeModal } from './components/modals/ChallengeModal';
 import { WelcomePage } from './pages/WelcomePage';
@@ -41,7 +42,7 @@ const Shell: React.FC = () => {
   const openConfig = () => setConfigOpen(true);
   const editWeekNote = (id: number) => {
     setNoteWeekId(id);
-    navigate('/notes');
+    navigate('/notas');
   };
 
   if (empty) {
@@ -63,12 +64,15 @@ const Shell: React.FC = () => {
         <Routes>
           <Route path="/" element={<DashboardPage />} />
           <Route path="/dashboard" element={<Navigate to="/" replace />} />
-          <Route path="/plan" element={<PlanPage onOpenWeek={setWeekId} />} />
+          <Route path="/plano" element={<PlanPage onOpenWeek={setWeekId} />} />
+          <Route path="/plan" element={<Navigate to="/plano" replace />} />
           <Route
-            path="/notes"
+            path="/notas"
             element={<NotesPage selectedWeekId={noteWeekId} onConsumed={() => setNoteWeekId(null)} />}
           />
-          <Route path="/challenges" element={<ChallengesPage onOpenChallenge={setChallengeId} />} />
+          <Route path="/notes" element={<Navigate to="/notas" replace />} />
+          <Route path="/desafios" element={<ChallengesPage onOpenChallenge={setChallengeId} />} />
+          <Route path="/challenges" element={<Navigate to="/desafios" replace />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
@@ -80,6 +84,7 @@ const Shell: React.FC = () => {
       {challengeId != null && (
         <ChallengeModal challengeId={challengeId} onClose={() => setChallengeId(null)} />
       )}
+      <LevelUpOverlay />
     </>
   );
 };
