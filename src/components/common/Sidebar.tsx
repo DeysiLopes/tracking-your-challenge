@@ -8,6 +8,7 @@ import { useTracker } from '../../hooks/useTracker';
 import { PixelCat } from './PixelCat';
 import { MascotBox } from './MascotBox';
 import { getCurrentDay, getEarnedXP, hasPlanContent } from '../../core/business/progress';
+import { catName } from '../../core/business/cats';
 
 interface Props {
   onOpenConfig: () => void;
@@ -21,7 +22,7 @@ const NAV_ITEMS = [
 ];
 
 export const Sidebar: React.FC<Props> = ({ onOpenConfig }) => {
-  const { ctx, plan, mascot, driveStatus, connectDrive, disconnectDrive, toast } = useTracker();
+  const { ctx, plan, mascot, driveStatus, connectDrive, disconnectDrive, toast, celebrateLevel } = useTracker();
   const [driveBusy, setDriveBusy] = useState(false);
 
   const day = getCurrentDay(ctx);
@@ -50,9 +51,14 @@ export const Sidebar: React.FC<Props> = ({ onOpenConfig }) => {
   return (
     <aside className="sidebar" id="sidebar">
       <div className="sidebar-logo">
-        <div className="logo-icon" id="logo-icon">
+        <button
+          className="logo-icon logo-cat-btn"
+          id="logo-icon"
+          title={`${catName(mascot.level)} — clique pra comemorar 🐾`}
+          onClick={celebrateLevel}
+        >
           <PixelCat level={mascot.level} size={32} className={`logo-cat cat-tier-${mascot.level}`} />
-        </div>
+        </button>
         <div className="logo-text">
           <span className="logo-title" id="plan-name">{planName}</span>
           <span className="logo-sub" id="plan-sub">{planSub}</span>

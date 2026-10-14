@@ -73,6 +73,7 @@ interface TrackerContextValue {
   driveStatus: DriveStatus;
   toast: (msg: string) => void;
   dismissLevelUp: () => void;
+  celebrateLevel: () => void;
   setTheme: (t: string) => void;
   setStartDate: (d: string) => void;
   toggleTask: (id: string, type: 'tasks' | 'deliverables') => void;
@@ -324,9 +325,17 @@ export const TrackerProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   // ─── Nível do gato + choro por atraso ───
   const totalXP = getTotalXP(ctx);
+  const levelInitRef = useRef(false);
   useEffect(() => {
     if (!loaded) return;
     const lvl = getCurrentXPLevel(totalXP).level;
+    // primeira sync após o load: só registra o nível, sem comemoração
+    if (!levelInitRef.current) {
+      levelInitRef.current = true;
+      lastLevelRef.current = lvl;
+      setMascot((m) => ({ ...m, level: lvl }));
+      return;
+    }
     if (lvl > lastLevelRef.current) {
       mascotCelebrate();
       mascotSay(`Você virou ${catName(lvl)}! 🐾`, 3200);
@@ -591,10 +600,19 @@ export const TrackerProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setMascot((m) => ({ ...m, levelUp: null }));
   }, []);
 
+  // replay manual da comemoração (clicar no gatinho do logo)
+  const celebrateLevel = useCallback(() => {
+    const lvl = getCurrentXPLevel(totalXP).level;
+    mascotCelebrate();
+    setMascot((m) => ({ ...m, levelUp: lvl }));
+    if (levelUpTimer.current) clearTimeout(levelUpTimer.current);
+    levelUpTimer.current = setTimeout(() => setMascot((m) => ({ ...m, levelUp: null })), 4500);
+  }, [totalXP, mascotCelebrate]);
+
   const value: TrackerContextValue = {
     loaded, ctx, plan, challengesData, state, weeks, challenges,
     mascot, theme, driveStatus,
-    toast, dismissLevelUp, setTheme, setStartDate,
+    toast, dismissLevelUp, celebrateLevel, setTheme, setStartDate,
     toggleTask, toggleChallengeTask, registerAttempt, toggleChallengeDone,
     markAllInWeek, saveWeekNote, saveChallengeNote, clearChallengeNotes,
     importFile, connectDrive, disconnectDrive,

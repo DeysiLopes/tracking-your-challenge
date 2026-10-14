@@ -183,6 +183,8 @@ body {
   margin-bottom: 8px;
 }
 .logo-icon { width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; filter: drop-shadow(0 0 12px var(--indigo-glow-xl)); }
+.logo-cat-btn { background: transparent; border: none; cursor: pointer; padding: 0; border-radius: var(--radius-sm); transition: transform var(--transition); }
+.logo-cat-btn:hover { transform: scale(1.12); }
 .logo-icon .cat-svg, .logo-icon svg { width: 28px; height: 28px; }
 .logo-text { display: flex; flex-direction: column; }
 .logo-title { font-weight: 800; font-size: 15px; color: var(--text-primary); letter-spacing: -0.3px; }
