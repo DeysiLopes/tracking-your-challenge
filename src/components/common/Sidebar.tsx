@@ -1,22 +1,26 @@
 /**
- * Sidebar — logo (gato), navegação entre views, mascote, contador
- * de dias e ações (Config, Importar, Exportar, Drive).
+ * Sidebar — logo (gato), navegação por rotas, mascote, contador
+ * de dias e ações (Config, Importar, Drive).
  */
 import React, { useState } from 'react';
+import { NavLink } from 'react-router-dom';
 import { useTracker } from '../../hooks/useTracker';
 import { PixelCat } from './PixelCat';
 import { MascotBox } from './MascotBox';
 import { getCurrentDay, getEarnedXP, hasPlanContent } from '../../core/business/progress';
 
-export type ViewId = 'dashboard' | 'plan' | 'notes' | 'challenges' | 'export';
-
 interface Props {
-  view: ViewId;
-  onNavigate: (v: ViewId) => void;
   onOpenConfig: () => void;
 }
 
-export const Sidebar: React.FC<Props> = ({ view, onNavigate, onOpenConfig }) => {
+const NAV_ITEMS = [
+  { to: '/', icon: '⚡', label: 'Dashboard', end: true },
+  { to: '/plan', icon: '📋', label: 'Plano Semanal', end: false },
+  { to: '/notes', icon: '📝', label: 'Minhas Notas', end: false },
+  { to: '/challenges', icon: '⚔️', label: 'Desafios', end: false, xp: true },
+];
+
+export const Sidebar: React.FC<Props> = ({ onOpenConfig }) => {
   const { ctx, plan, mascot, driveStatus, connectDrive, disconnectDrive, toast } = useTracker();
   const [driveBusy, setDriveBusy] = useState(false);
 
@@ -24,20 +28,6 @@ export const Sidebar: React.FC<Props> = ({ view, onNavigate, onOpenConfig }) => 
   const earnedXP = getEarnedXP(ctx);
   const planName = hasPlanContent(ctx) ? plan.name : 'Tracker';
   const planSub = hasPlanContent(ctx) ? `${plan.totalDays} dias` : 'na Gringa';
-
-  const nav = (id: ViewId, icon: string, label: string, xpBadge = false) => (
-    <button
-      className={`nav-item${view === id ? ' active' : ''}`}
-      data-view={id}
-      onClick={() => onNavigate(id)}
-    >
-      <span className="nav-icon">{icon}</span>
-      <span>{label}</span>
-      {xpBadge && (
-        <span className={`nav-xp-badge${earnedXP > 0 ? ' visible' : ''}`}>{earnedXP} XP</span>
-      )}
-    </button>
-  );
 
   const onDrive = async () => {
     if (driveStatus.connected) {
@@ -70,10 +60,20 @@ export const Sidebar: React.FC<Props> = ({ view, onNavigate, onOpenConfig }) => 
       </div>
 
       <nav className="sidebar-nav">
-        {nav('dashboard', '⚡', 'Dashboard')}
-        {nav('plan', '📋', 'Plano Semanal')}
-        {nav('notes', '📝', 'Minhas Notas')}
-        {nav('challenges', '⚔️', 'Desafios', true)}
+        {NAV_ITEMS.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            end={item.end}
+            className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
+          >
+            <span className="nav-icon">{item.icon}</span>
+            <span>{item.label}</span>
+            {item.xp && (
+              <span className={`nav-xp-badge${earnedXP > 0 ? ' visible' : ''}`}>{earnedXP} XP</span>
+            )}
+          </NavLink>
+        ))}
       </nav>
 
       <MascotBox />
@@ -81,12 +81,11 @@ export const Sidebar: React.FC<Props> = ({ view, onNavigate, onOpenConfig }) => 
       <div className="sidebar-footer">
         <div className="day-counter" id="day-counter">
           <span className="day-label">Dia</span>
-          <span className="day-number" id="current-day">{day ?? '—'}</span>
-          <span className="day-label">de <span id="total-days">{plan.totalDays || 90}</span></span>
+          <span className="day-number" id="current-day">{hasPlanContent(ctx) ? (day ?? '—') : '—'}</span>
+          <span className="day-label">de <span id="total-days">{hasPlanContent(ctx) ? plan.totalDays : '—'}</span></span>
         </div>
         <button className="settings-btn" title="Configurar data de início" onClick={onOpenConfig}>⚙ Config</button>
         <button className="settings-btn" title="Importar plano a partir de .md" onClick={onOpenConfig}>📂 Importar</button>
-        <button className="settings-btn" title="Exportar para o Obsidian" onClick={() => onNavigate('export')}>🗂️ Exportar Obsidian</button>
         <button
           className={`settings-btn${driveStatus.connected ? ' connected' : ''}`}
           id="drive-btn"

@@ -15,8 +15,7 @@ A **local-first PWA** (React 18 + TypeScript + Vite) for tracking an N-day study
 | **Dashboard** | Current day (`Day X of N`), XP hero (pixel-art cat + level ring), overall progress, badges |
 | **Weekly Plan** | Phase-based week map (imported from a `.md`), sequential unlock (next week only opens when the previous one is 100%), detail modal with tasks + deliverable + note + Obsidian tags |
 | **Challenges (gamified)** | Challenge list imported from another `.md` file, XP per challenge, atomic tasks with acceptance criteria and dependencies, streak, attempts in Markdown, **collectible cat badges** per completed challenge |
-| **Notes** | Markdown notes per week + challenge attempts, with wiki-link `[[...]]` support for Obsidian |
-| **Export** | Full `.zip` export (index + progress + each week + each challenge as `.md` with YAML frontmatter), current-week export and progress export |
+| **Notes** | Markdown notes per week + challenge attempts, with wiki-link `[[...]]` support — everything written syncs to Drive automatically |
 | **Import** | `.md` picker with format auto-detection (see [Supported formats](#supported-formats)) |
 | **Persistence** | IndexedDB first (offline-first), `localStorage` mirror, optional Google Drive sync (same JSON-in-Drive scheme used by our other apps) |
 | **PWA** | Installable, works fully offline via generated service worker (`vite-plugin-pwa`) |
@@ -31,7 +30,7 @@ Requires **Node 20+**.
 cd tracking-your-challenge
 npm install
 npm run dev        # dev server (Vite)
-npm test           # vitest — parser, progresso, export, cats
+npm test           # vitest — parser, progresso, cats
 npm run build      # produção → dist/ (com service worker PWA)
 npm run preview    # serve o dist/ localmente
 ```
@@ -63,7 +62,7 @@ The built app is a plain static site — deploy `dist/` anywhere (Cloudflare Pag
 | `VITE_BASE_PATH` | Base path (`/` for apex domains — default) |
 | `VITE_GOOGLE_CLIENT_ID` | Google OAuth client for Drive sync |
 
-SPA fallback is handled by `public/_redirects` (Cloudflare Pages convention).
+Cada item do menu é uma rota real (`/`, `/plan`, `/notes`, `/challenges` — React Router). O fallback SPA é garantido pelo `public/_redirects` (Cloudflare Pages ativa modo SPA sozinho sem `404.html`).
 
 ---
 
@@ -144,19 +143,18 @@ tracking-your-challenge/
 ├── index.html                 # Entry — #root + Google Identity Services
 ├── vite.config.ts             # Vite + vite-plugin-pwa (manifest + SW)
 ├── src/
-│   ├── main.tsx, App.tsx      # Boot + shell (sidebar, views, modals)
+│   ├── main.tsx, App.tsx      # Boot (BrowserRouter) + shell + rotas
 │   ├── core/
 │   │   ├── models/tracker.ts      # Tipos do domínio (Plan, Week, Challenge, State…)
 │   │   ├── business/parser.ts     # Auto-detecção e parse dos 2 formatos .md
 │   │   ├── business/progress.ts   # XP, níveis, streak, badges, gates (funções puras)
 │   │   ├── business/cats.ts       # Mascote pixel-art (skins por nível)
-│   │   ├── business/export.ts     # Geração .md/ZIP p/ Obsidian (jszip)
 │   │   └── storage/
 │   │       ├── db.ts              # IndexedDB (kv + meta) — fonte local-first
 │   │       └── drive.ts           # Google Identity + Drive REST, merge LWW
 │   ├── hooks/useTracker.tsx       # Contexto global (estado + persistência + ações)
 │   ├── components/                # Sidebar, MascotBox, PixelCat, modais…
-│   ├── pages/                     # Welcome, Dashboard, Plan, Notes, Challenges, Export
+│   ├── pages/                     # Welcome, Dashboard, Plan, Notes, Challenges
 │   └── styles/global.css          # Catppuccin Mocha (padrão) + Dark Premium
 ├── tracker/                   # LEGADO — app vanilla (ainda funcional com server.py)
 ├── server.py                  # LEGADO — backend Python + SQLite (opcional)

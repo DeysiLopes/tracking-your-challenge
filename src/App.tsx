@@ -1,11 +1,13 @@
 /**
- * App — shell do Tracker: sidebar + view ativa + modais.
- * Navegação por estado (mesma lógica de showView() do legado):
- * sem conteúdo importado, sempre cai na tela de boas-vindas.
+ * App — shell do Tracker: sidebar + rotas SPA + modais.
+ * Cada item do menu é uma rota real (React Router); sem conteúdo
+ * importado, qualquer rota cai na tela de boas-vindas (mesma regra
+ * do showView() legado).
  */
 import React, { useState } from 'react';
+import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
 import { TrackerProvider, useTracker } from './hooks/useTracker';
-import { Sidebar, type ViewId } from './components/common/Sidebar';
+import { Sidebar } from './components/common/Sidebar';
 import { ConfigModal } from './components/modals/ConfigModal';
 import { WeekModal } from './components/modals/WeekModal';
 import { ChallengeModal } from './components/modals/ChallengeModal';
@@ -14,12 +16,11 @@ import { DashboardPage } from './pages/DashboardPage';
 import { PlanPage } from './pages/PlanPage';
 import { NotesPage } from './pages/NotesPage';
 import { ChallengesPage } from './pages/ChallengesPage';
-import { ExportPage } from './pages/ExportPage';
 import { hasContent } from './core/business/progress';
 
 const Shell: React.FC = () => {
   const { loaded, ctx } = useTracker();
-  const [view, setView] = useState<ViewId>('dashboard');
+  const navigate = useNavigate();
   const [configOpen, setConfigOpen] = useState(false);
   const [weekId, setWeekId] = useState<number | null>(null);
   const [challengeId, setChallengeId] = useState<string | null>(null);
@@ -40,26 +41,36 @@ const Shell: React.FC = () => {
   const openConfig = () => setConfigOpen(true);
   const editWeekNote = (id: number) => {
     setNoteWeekId(id);
-    setView('notes');
+    navigate('/notes');
   };
+
+  if (empty) {
+    return (
+      <>
+        <Sidebar onOpenConfig={openConfig} />
+        <main className="main" id="main-content">
+          <WelcomePage onOpenConfig={openConfig} />
+        </main>
+        <ConfigModal open={configOpen} onClose={() => setConfigOpen(false)} />
+      </>
+    );
+  }
 
   return (
     <>
-      <Sidebar view={view} onNavigate={setView} onOpenConfig={openConfig} />
+      <Sidebar onOpenConfig={openConfig} />
       <main className="main" id="main-content">
-        {empty ? (
-          <WelcomePage onOpenConfig={openConfig} />
-        ) : view === 'dashboard' ? (
-          <DashboardPage />
-        ) : view === 'plan' ? (
-          <PlanPage onOpenWeek={setWeekId} />
-        ) : view === 'notes' ? (
-          <NotesPage selectedWeekId={noteWeekId} onConsumed={() => setNoteWeekId(null)} />
-        ) : view === 'challenges' ? (
-          <ChallengesPage onOpenChallenge={setChallengeId} />
-        ) : (
-          <ExportPage />
-        )}
+        <Routes>
+          <Route path="/" element={<DashboardPage />} />
+          <Route path="/dashboard" element={<Navigate to="/" replace />} />
+          <Route path="/plan" element={<PlanPage onOpenWeek={setWeekId} />} />
+          <Route
+            path="/notes"
+            element={<NotesPage selectedWeekId={noteWeekId} onConsumed={() => setNoteWeekId(null)} />}
+          />
+          <Route path="/challenges" element={<ChallengesPage onOpenChallenge={setChallengeId} />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </main>
 
       <ConfigModal open={configOpen} onClose={() => setConfigOpen(false)} />
