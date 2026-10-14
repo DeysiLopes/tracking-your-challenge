@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 16 16" shape-rendering="crispEdges">
+  <!-- Simple pixel cat favicon inspired by tracker cats -->
+  <rect x="0" y="0" width="16" height="16" fill="#1e1e2e"/>
+  <!-- Ears -->
+  <rect x="2" y="1" width="3" height="2" fill="#f38ba8"/>
+  <rect x="11" y="1" width="3" height="2" fill="#f38ba8"/>
+  <!-- Face outline -->
+  <rect x="3" y="3" width="10" height="9" fill="#45475a"/>
+  <!-- Eyes -->
+  <rect x="5" y="6" width="1" height="1" fill="#89b4fa"/>
+  <rect x="10" y="6" width="1" height="1" fill="#89b4fa"/>
+  <!-- Nose -->
+  <rect x="8" y="8" width="1" height="1" fill="#eba0ac"/>
+  <!-- Mouth -->
+  <rect x="7" y="9" width="1" height="1" fill="#11111b"/>
+  <rect x="9" y="9" width="1" height="1" fill="#11111b"/>
+</svg>

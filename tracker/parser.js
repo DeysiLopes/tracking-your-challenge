@@ -52,7 +52,7 @@ function parseDaysRange(s) {
 function parseProgrammaticMD(text, filename) {
   const lines = text.split(/\r?\n/);
   const phases = [];
-  let curPhase = null, curWeek = null;
+  let curPhase = null, curWeek = null, weekSeq = 0;
 
   for (const raw of lines) {
     const line = raw.trim();
@@ -72,8 +72,11 @@ function parseProgrammaticMD(text, filename) {
     // Semana
     const wm = line.match(/^###\s*(?:Semana|Week)\s*(\d+)\s*[—\-–:]\s*(.*)$/i);
     if (wm && curPhase) {
+      // id global único encadeado entre fases (o app resolve por id no
+      // array achatado allWeeks; usar o número local por fase geraria colisões).
+      weekSeq = (weekSeq || 0) + 1;
       curWeek = {
-        id: parseInt(wm[1]),
+        id: weekSeq,
         title: wm[2].trim(),
         days: '',
         phase: curPhase.id,
