@@ -4,8 +4,10 @@
 
 // ════════════════════════════════════════════════════════
 //  STATE + PERSISTÊNCIA
-//  Fonte principal: API REST do servidor (SQLite via server.py),
-//  com espelho em localStorage como fallback (file:// e offline).
+//  Fonte principal: IndexedDB (db.js) — o app é estático e
+//  offline-first. server.py (/api/data) ainda é consultado no boot
+//  para semear o IDB se estiver rodando, e localStorage segue como
+//  espelho de fallback. Sync opcional: Google Drive (drive.js).
 // ════════════════════════════════════════════════════════
 const STATE_KEY_BASE = '90dias-tracker-state';
 const CONTENT_KEY = '90dias-tracker-content';
@@ -36,9 +38,11 @@ function initTheme() {
   return applyTheme(t || 'catppuccin');
 }
 
-// Cache do servidor: { content: <objeto importado|null>, states: { <key>: <estado> } }
+// Snapshot local: { content: <objeto importado|null>, states: { <key>: <estado> } }
+// (mesmo shape do antigo GET /api/data — agora populado pelo IndexedDB)
 let serverData = { content: null, states: {} };
-let serverOk = false; // true quando /api/data respondeu (servidor é fonte da verdade)
+let serverOk = false;   // true quando uma fonte autoritativa respondeu (IDB/server/Drive)
+let serverApi = false;  // true quando server.py respondeu nesta sessão → dual-write
 
 async function apiFetch(path, opts) {
   const res = await fetch(path, opts);
@@ -46,22 +50,140 @@ async function apiFetch(path, opts) {
   return res.json();
 }
 
-async function loadAllFromServer() {
+// Semeia o IDB a partir do espelho localStorage (migração silenciosa)
+function seedFromLocalStorage() {
+  const snap = { content: null, states: {} };
   try {
-    serverData = await apiFetch('/api/data');
-    serverData.states = serverData.states || {};
-    serverOk = true;
+    const raw = localStorage.getItem(CONTENT_KEY);
+    if (raw) snap.content = JSON.parse(raw);
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith(STATE_KEY_BASE)) {
+        const v = localStorage.getItem(k);
+        if (v) snap.states[k] = JSON.parse(v);
+      }
+    }
+  } catch (e) {}
+  return (snap.content != null || Object.keys(snap.states).length) ? snap : null;
+}
+
+async function loadAllFromServer() {
+  // 1) IndexedDB — fonte local-first
+  try {
+    const fromIdb = await TrackerDB.getAll();
+    if (fromIdb.content != null || Object.keys(fromIdb.states).length) {
+      serverData = fromIdb;
+      serverData.states = serverData.states || {};
+      serverOk = true;
+    }
   } catch (e) {
-    console.warn('Servidor indisponível; usando localStorage', e);
+    console.warn('IndexedDB indisponível; usando fallbacks', e);
+  }
+
+  // 2) server.py (se rodando): autoritativo na 1ª vez e semeia o IDB
+  try {
+    const srv = await apiFetch('/api/data');
+    srv.states = srv.states || {};
+    serverApi = true;
+    const idbWasEmpty = !serverOk;
+    if (idbWasEmpty) {
+      serverData = srv;
+      serverOk = true;
+    } else {
+      // IDB é a verdade, mas preenche chaves que ele ainda não tem
+      // (ex.: estado de um plano importado em outra sessão).
+      for (const k of Object.keys(srv.states)) {
+        if (!(k in serverData.states)) serverData.states[k] = srv.states[k];
+      }
+      if (serverData.content == null && srv.content != null) serverData.content = srv.content;
+    }
+    try { await TrackerDB.seed(srv); } catch (e) {}
+    return;
+  } catch (e) {
+    if (!serverOk) console.warn('Servidor indisponível; usando armazenamento local', e);
+  }
+
+  // 3) localStorage legado — semeia o IDB para a próxima abertura
+  if (!serverOk) {
+    const snap = seedFromLocalStorage();
+    if (snap) {
+      serverData = snap;
+      serverOk = true;
+      try { await TrackerDB.seed(snap); } catch (e) {}
+    }
   }
 }
 
 function persistToServer(payload) {
-  fetch('/api/data', {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  }).catch(e => console.warn('Falha ao salvar no servidor', e));
+  // IDB é o destino principal; Drive e server.py acompanham quando ativos
+  TrackerDB.patch(payload)
+    .then(() => TrackerDrive.onLocalChange(payload.state ? payload.state.key : 'content'))
+    .catch(e => console.warn('Falha ao salvar no IndexedDB', e));
+  if (serverApi) {
+    fetch('/api/data', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    }).catch(e => console.warn('Falha ao salvar no servidor', e));
+  }
+}
+
+// Espelha o snapshot atual no localStorage (fallback file:// e seed)
+function mirrorSnapshotToLocalStorage() {
+  try {
+    if (serverData.content != null) localStorage.setItem(CONTENT_KEY, JSON.stringify(serverData.content));
+    else localStorage.removeItem(CONTENT_KEY);
+    for (const k of Object.keys(serverData.states || {})) {
+      localStorage.setItem(k, JSON.stringify(serverData.states[k]));
+    }
+  } catch (e) {}
+}
+
+// Aplica um snapshot vindo do Drive: joga no snapshot em memória e
+// re-restaura conteúdo + estado ativo (usado após pull-merge).
+async function applySnapshot(snap) {
+  if (!snap) return;
+  serverData = { content: snap.content, states: snap.states || {} };
+  serverOk = true;
+  mirrorSnapshotToLocalStorage();
+  await restoreContent();
+  await loadState();
+  refreshAll();
+}
+
+// ─── Sync opcional com Google Drive (drive.js) ───
+function renderDriveButton() {
+  const btn = $('drive-btn');
+  if (!btn) return;
+  const s = TrackerDrive.status();
+  btn.textContent = s.connected ? `☁️ ${s.user || 'Drive'}` : '☁️ Drive';
+  btn.title = s.connected
+    ? `Sincronizando com Google Drive (${s.user || 'conectado'}) — clique para desconectar`
+    : 'Conectar Google Drive para sincronizar entre aparelhos';
+  btn.classList.toggle('connected', !!s.connected);
+}
+async function onDriveButton() {
+  const btn = $('drive-btn');
+  if (TrackerDrive.isConnected()) {
+    await TrackerDrive.disconnect();
+    renderDriveButton();
+    showToast('Drive desconectado — seus dados continuam salvos localmente.');
+    return;
+  }
+  try {
+    if (btn) btn.disabled = true;
+    const r = await TrackerDrive.connect();
+    renderDriveButton();
+    if (r && r.merged) await applySnapshot(r.merged);
+    showToast(`Google Drive conectado${r && r.user ? ' · ' + r.user : ''} ☁️`);
+  } catch (e) {
+    const msg = (e && e.message) || '';
+    showToast(msg.includes('config.js')
+      ? 'Crie tracker/config.js com seu googleClientId (veja config.example.js).'
+      : 'Falha ao conectar no Drive: ' + msg);
+  } finally {
+    if (btn) btn.disabled = false;
+  }
 }
 
 function parseStateRaw(raw) {
@@ -1665,9 +1787,21 @@ function markAllInWeek(weekId) {
 window.appInit = new Promise(resolve => {
   document.addEventListener('DOMContentLoaded', async () => {
   initTheme();
-  // Carrega do servidor (SQLite) antes de restaurar, pois a chave de
-  // estado depende do id do plano ativo.
+  // Carrega o armazenamento local (IndexedDB, com seed do server.py ou
+  // localStorage) antes de restaurar, pois a chave de estado depende do
+  // id do plano ativo.
   await loadAllFromServer();
+  // Sync Drive: se estava conectado, baixa e funde antes de renderizar.
+  try {
+    const merged = await TrackerDrive.boot();
+    if (merged) {
+      serverData = { content: merged.content, states: merged.states || {} };
+      serverOk = true;
+      mirrorSnapshotToLocalStorage();
+    }
+  } catch (e) {
+    console.warn('Drive sync no boot falhou', e);
+  }
   await restoreContent();
   await loadState();
   syncAppBranding();
@@ -1746,6 +1880,11 @@ window.appInit = new Promise(resolve => {
       renderChallengesView();
     }
   });
+
+  // Drive sync (opcional — app funciona 100% local sem ele)
+  TrackerDrive.onStatus(renderDriveButton);
+  renderDriveButton();
+  $('drive-btn').addEventListener('click', onDriveButton);
 
   // Import .md
   $('import-btn').addEventListener('click', () => $('modal-config').style.display = 'flex');
