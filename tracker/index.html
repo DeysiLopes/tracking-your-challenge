@@ -9,8 +9,21 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
-  <link rel="icon" href="/tracker/cat-favicon.svg" type="image/svg+xml" />
-  <link rel="manifest" href="/tracker/manifest.json" />
+  <link rel="icon" href="cat-favicon.svg" type="image/svg+xml" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#1e1e2e" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <!-- Google Identity Services (sync opcional com Drive) -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script>
+    // PWA: registra o service worker (offline-first). Escopo relativo —
+    // funciona em qualquer base path.
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(() => {});
+      });
+    }
+  </script>
 </head>
 <body>
 
@@ -59,6 +72,7 @@
       <button class="settings-btn" id="settings-btn" title="Configurar data de início">⚙ Config</button>
       <button class="settings-btn" id="import-btn" title="Importar plano a partir de .md">📂 Importar</button>
       <button class="settings-btn" id="export-btn" title="Exportar para o Obsidian">🗂️ Exportar Obsidian</button>
+      <button class="settings-btn" id="drive-btn" title="Conectar Google Drive para sincronizar entre aparelhos">☁️ Drive</button>
     </div>
   </aside>
 
@@ -335,9 +349,11 @@ Use [[links]] para conectar assuntos no Obsidian." disabled></textarea>
     </div>
   </div>
 
-  <script src="data.js?v=2"></script>
-  <script src="cats.js?v=2"></script>
-  <script src="parser.js?v=2"></script>
-  <script src="app.js?v=2"></script>
+  <script src="data.js?v=3"></script>
+  <script src="cats.js?v=3"></script>
+  <script src="parser.js?v=3"></script>
+  <script src="db.js?v=3"></script>
+  <script src="drive.js?v=3"></script>
+  <script src="app.js?v=3"></script>
 </body>
 </html>

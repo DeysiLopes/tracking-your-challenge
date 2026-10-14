@@ -31,3 +31,18 @@ _persist_test.html
 .vscode/
 .idea/
 *.swp
+
+# Config local (Google Client ID — cada ambiente tem o seu)
+tracker/config.js
+.env
+.env.local
+.env.*.local
+
+# App React (Vite)
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# TypeScript incremental build info
+*.tsbuildinfo
