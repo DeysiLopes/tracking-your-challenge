@@ -211,14 +211,23 @@ body {
     display: flex; align-items: center; justify-content: center;
     font-size: 16px;
   }
-  .sidebar.collapsed .sidebar-nav { align-items: center; }
-  .sidebar.collapsed .sidebar-footer { align-items: center; gap: 8px; }
+  /* ícones do rodapé no mesmo peso visual dos de navegação */
+  .sidebar.collapsed .settings-btn .sb-icon { font-size: 19px; line-height: 1; }
+  /* nav não estica — todo mundo empacota junto no topo */
+  .sidebar.collapsed .sidebar-nav { align-items: center; flex: none; gap: 8px; }
+  .sidebar.collapsed .sidebar-footer { align-items: center; gap: 8px; margin-top: auto; border-top: none; padding-top: 0; }
   /* mascote encolhe pro mesmo tamanho dos ícones */
-  .sidebar.collapsed .mascot-box { padding: 4px; margin: 0; }
+  .sidebar.collapsed .mascot-box {
+    padding: 0; margin: 0; width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+  }
   .sidebar.collapsed .mascot-cat { width: 36px; }
   .sidebar.collapsed .mascot-cat svg { width: 36px; height: auto; }
   /* contador vira um ícone compacto */
-  .sidebar.collapsed .day-counter { padding: 6px 4px; flex-direction: column; gap: 0; }
+  .sidebar.collapsed .day-counter {
+    padding: 0; width: 40px; height: 40px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0;
+  }
   .sidebar.collapsed .day-number { font-size: 15px; }
   .sidebar.collapsed .sidebar-toggle { top: 6px; right: 6px; }
 }
@@ -317,6 +326,7 @@ body {
   transition: all var(--transition);
   width: 100%;
 }
+.settings-btn .sb-icon { font-size: 14px; }
 .settings-btn:hover { border-color: var(--indigo); color: var(--indigo-light); background: var(--indigo-dim); }
 .settings-btn.connected { border-color: var(--emerald); color: var(--emerald); }
 .settings-btn.connected:hover { background: rgba(166, 227, 161, .08); }

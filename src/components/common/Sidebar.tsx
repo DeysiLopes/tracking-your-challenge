@@ -101,8 +101,8 @@ export const Sidebar: React.FC<Props> = ({ onOpenConfig }) => {
           <span className="day-number" id="current-day">{hasPlanContent(ctx) ? (day ?? '—') : '—'}</span>
           <span className="day-label">de <span id="total-days">{hasPlanContent(ctx) ? plan.totalDays : '—'}</span></span>
         </div>
-        <button className="settings-btn" title="Configurar data de início" onClick={onOpenConfig}>⚙ <span className="sb-label">Config</span></button>
-        <button className="settings-btn" title="Importar plano a partir de .md" onClick={onOpenConfig}>📂 <span className="sb-label">Importar</span></button>
+        <button className="settings-btn" title="Configurar data de início" onClick={onOpenConfig}><span className="sb-icon">⚙️</span> <span className="sb-label">Config</span></button>
+        <button className="settings-btn" title="Importar plano a partir de .md" onClick={onOpenConfig}><span className="sb-icon">📂</span> <span className="sb-label">Importar</span></button>
         <button
           className={`settings-btn${driveStatus.connected ? ' connected' : ''}`}
           id="drive-btn"
@@ -112,7 +112,7 @@ export const Sidebar: React.FC<Props> = ({ onOpenConfig }) => {
             : 'Conectar Google Drive para sincronizar entre aparelhos'}
           onClick={onDrive}
         >
-          ☁️ <span className="sb-label">{driveStatus.connected ? (driveStatus.user || 'Drive') : 'Drive'}</span>
+          <span className="sb-icon">☁️</span> <span className="sb-label">{driveStatus.connected ? (driveStatus.user || 'Drive') : 'Drive'}</span>
         </button>
       </div>
     </aside>
