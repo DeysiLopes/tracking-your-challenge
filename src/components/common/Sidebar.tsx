@@ -21,9 +21,18 @@ const NAV_ITEMS = [
   { to: '/desafios', icon: '⚔️', label: 'Desafios', end: false, xp: true },
 ];
 
+const COLLAPSED_KEY = 'tracker-sidebar-collapsed';
+
 export const Sidebar: React.FC<Props> = ({ onOpenConfig }) => {
   const { ctx, plan, mascot, driveStatus, connectDrive, disconnectDrive, toast, showOffCat } = useTracker();
   const [driveBusy, setDriveBusy] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => localStorage.getItem(COLLAPSED_KEY) === '1');
+
+  const toggleCollapsed = () => {
+    const next = !collapsed;
+    setCollapsed(next);
+    localStorage.setItem(COLLAPSED_KEY, next ? '1' : '0');
+  };
 
   const day = getCurrentDay(ctx);
   const earnedXP = getEarnedXP(ctx);
@@ -49,7 +58,15 @@ export const Sidebar: React.FC<Props> = ({ onOpenConfig }) => {
   };
 
   return (
-    <aside className="sidebar" id="sidebar">
+    <aside className={`sidebar${collapsed ? ' collapsed' : ''}`} id="sidebar">
+      <button
+        className="sidebar-toggle"
+        onClick={toggleCollapsed}
+        title={collapsed ? 'Expandir menu' : 'Recolher menu (só ícones)'}
+        aria-label={collapsed ? 'Expandir menu' : 'Recolher menu'}
+      >
+        {collapsed ? '»' : '«'}
+      </button>
       <div className="sidebar-logo">
         <button
           className="logo-icon logo-cat-btn"
@@ -90,8 +107,8 @@ export const Sidebar: React.FC<Props> = ({ onOpenConfig }) => {
           <span className="day-number" id="current-day">{hasPlanContent(ctx) ? (day ?? '—') : '—'}</span>
           <span className="day-label">de <span id="total-days">{hasPlanContent(ctx) ? plan.totalDays : '—'}</span></span>
         </div>
-        <button className="settings-btn" title="Configurar data de início" onClick={onOpenConfig}>⚙ Config</button>
-        <button className="settings-btn" title="Importar plano a partir de .md" onClick={onOpenConfig}>📂 Importar</button>
+        <button className="settings-btn" title="Configurar data de início" onClick={onOpenConfig}>⚙ <span className="sb-label">Config</span></button>
+        <button className="settings-btn" title="Importar plano a partir de .md" onClick={onOpenConfig}>📂 <span className="sb-label">Importar</span></button>
         <button
           className={`settings-btn${driveStatus.connected ? ' connected' : ''}`}
           id="drive-btn"
@@ -101,7 +118,7 @@ export const Sidebar: React.FC<Props> = ({ onOpenConfig }) => {
             : 'Conectar Google Drive para sincronizar entre aparelhos'}
           onClick={onDrive}
         >
-          {driveStatus.connected ? `☁️ ${driveStatus.user || 'Drive'}` : '☁️ Drive'}
+          ☁️ <span className="sb-label">{driveStatus.connected ? (driveStatus.user || 'Drive') : 'Drive'}</span>
         </button>
       </div>
     </aside>

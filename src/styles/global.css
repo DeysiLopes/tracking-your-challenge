@@ -182,6 +182,35 @@ body {
   border-bottom: 1px solid var(--border);
   margin-bottom: 8px;
 }
+/* botão de recolher a sidebar (fica só com ícones) */
+.sidebar-toggle {
+  position: absolute; top: 10px; right: 10px; z-index: 2;
+  width: 22px; height: 22px; border-radius: 6px;
+  border: 1px solid var(--border); background: var(--bg-card);
+  color: var(--text-muted); font-size: 12px; line-height: 1;
+  cursor: pointer; transition: all var(--transition);
+}
+.sidebar-toggle:hover { color: var(--indigo-light); border-color: var(--indigo); }
+
+/* sidebar colapsada (desktop): só ícones, coluna estreita */
+@media (min-width: 769px) {
+  .sidebar.collapsed { width: 72px; min-width: 72px; align-items: center; padding: 24px 8px; }
+  .sidebar.collapsed .sidebar-logo { border-bottom: none; padding: 8px 0 14px; justify-content: center; margin-bottom: 0; }
+  .sidebar.collapsed .mascot-name,
+  .sidebar.collapsed .mascot-bubble,
+  .sidebar.collapsed .day-counter .day-label { display: none; }
+  .sidebar.collapsed .sidebar-nav { align-items: center; }
+  .sidebar.collapsed .sidebar-footer { align-items: center; }
+  .sidebar.collapsed .nav-item { justify-content: center; padding: 10px; width: auto; }
+  .sidebar.collapsed .settings-btn { justify-content: center; width: auto; }
+  .sidebar.collapsed .sidebar-toggle { top: 6px; right: 6px; }
+}
+/* colapsada em qualquer tamanho: labels somem, ficam só os ícones */
+.sidebar.collapsed .logo-text,
+.sidebar.collapsed .nav-item span:not(.nav-icon),
+.sidebar.collapsed .nav-xp-badge,
+.sidebar.collapsed .sb-label { display: none; }
+
 .logo-icon { width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; filter: drop-shadow(0 0 12px var(--indigo-glow-xl)); }
 .logo-cat-btn { background: transparent; border: none; cursor: pointer; padding: 0; border-radius: var(--radius-sm); transition: transform var(--transition); }
 .logo-cat-btn:hover { transform: scale(1.12); }
@@ -1431,10 +1460,16 @@ body {
   .sidebar {
     width: 100%; min-width: 0; height: auto; max-height: none;
     flex-direction: row; flex-wrap: wrap; align-items: center;
-    padding: 10px 12px; gap: 6px;
+    padding: 10px 40px 10px 12px; gap: 6px;
     border-right: none; border-bottom: 1px solid var(--border);
     position: sticky; top: 0;
   }
+  /* no modo barra, o toggle continua no canto direito */
+  .sidebar-toggle { position: absolute; top: 50%; transform: translateY(-50%); right: 10px; }
+  /* colapsada no mobile: esconde os labels do nav e dos botões */
+  .sidebar.collapsed .nav-item span:not(.nav-icon),
+  .sidebar.collapsed .nav-xp-badge,
+  .sidebar.collapsed .sb-label { display: none; }
   .sidebar-logo { border-bottom: none; padding: 0; margin: 0; }
   .logo-icon { width: 32px; height: 32px; }
   .logo-icon .cat-svg, .logo-icon svg { width: 22px; height: 22px; }
