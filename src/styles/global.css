@@ -693,10 +693,41 @@ body {
 }
 .notes-search:focus { border-color: var(--indigo); }
 
-.notes-grid {
+/* duas colunas: plano semanal | desafios */
+.notes-columns {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 14px;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  align-items: start;
+}
+.notes-col {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 120px;
+}
+.notes-col-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px;
+  font-size: 12px; font-weight: 700; color: var(--text-secondary);
+  text-transform: uppercase; letter-spacing: 0.08em;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-surface);
+  position: sticky; top: 0; z-index: 1;
+}
+.notes-col-count { font-size: 10px; color: var(--text-muted); font-weight: 600; }
+.notes-col-list {
+  display: flex; flex-direction: column; gap: 10px;
+  padding: 12px;
+  overflow-y: auto;
+  max-height: calc(100dvh - 260px);
+}
+.notes-col-empty {
+  padding: 24px 16px; text-align: center;
+  font-size: 12px; color: var(--text-muted); font-style: italic;
 }
 .note-card {
   display: flex;
@@ -1382,7 +1413,6 @@ body {
 /* ─── Responsive ─── */
 @media (max-width: 1100px) {
   .main { padding: 26px 26px; }
-  .notes-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
 }
 
 @media (max-width: 768px) {
@@ -1416,6 +1446,8 @@ body {
   .page-header { flex-wrap: wrap; }
   .page-header h1 { font-size: 22px; }
   .notes-search { width: 100%; margin-left: 0; }
+  .notes-columns { grid-template-columns: 1fr; }
+  .notes-col-list { max-height: none; }
   .modal { width: calc(100vw - 24px); }
 
   /* caderno ocupa quase a tela toda */
@@ -1444,7 +1476,6 @@ body {
 
 @media (max-width: 420px) {
   .stats-grid { grid-template-columns: 1fr; }
-  .notes-grid { grid-template-columns: 1fr; }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -12,6 +12,21 @@ import { getChallengeState, hasChallengesContent, hasPlanContent } from '../core
 
 type NoteSel = { type: 'week'; id: number } | { type: 'challenge'; id: string } | null;
 
+const NoteCard: React.FC<{ entry: Entry; onOpen: () => void }> = ({ entry, onOpen }) => (
+  <button
+    className={`note-card${entry.hasNote ? ' has-note' : ''}`}
+    onClick={onOpen}
+  >
+    <div className="nc-top">
+      <span className="nc-label">{entry.label}</span>
+      <span className={`nc-dot${entry.hasNote ? ' on' : ''}`} title={entry.hasNote ? 'com nota' : 'sem nota'} />
+    </div>
+    <div className="nc-title">{entry.title}</div>
+    <div className="nc-sub">{entry.subtitle}</div>
+    <div className="nc-preview">{entry.hasNote ? entry.preview : 'Escrever nota…'}</div>
+  </button>
+);
+
 interface Entry {
   type: 'week' | 'challenge';
   id: number | string;
@@ -70,6 +85,8 @@ export const NotesPage: React.FC<{ selectedWeekId?: number | null; onConsumed?: 
 
   const filtered = entries.filter((e) =>
     !query || `${e.label} ${e.title}`.toLowerCase().includes(query.toLowerCase()));
+  const weekNotes = filtered.filter((e) => e.type === 'week');
+  const challengeNotes = filtered.filter((e) => e.type === 'challenge');
 
   const selWeek = sel && sel.type === 'week' ? weeks.find((w) => w.id === sel.id) : null;
   const selChallenge = sel && sel.type === 'challenge' ? challenges.find((c) => c.id === sel.id) : null;
@@ -128,23 +145,30 @@ export const NotesPage: React.FC<{ selectedWeekId?: number | null; onConsumed?: 
           Importe um plano ou desafios (.md) pra começar a escrever notas.
         </EmptyNotice>
       ) : (
-        <div className="notes-grid">
-          {filtered.map((en) => (
-            <button
-              key={`${en.type}-${en.id}`}
-              className={`note-card${en.hasNote ? ' has-note' : ''}`}
-              onClick={() => setSel({ type: en.type, id: en.id } as NoteSel)}
-            >
-              <div className="nc-top">
-                <span className="nc-label">{en.label}</span>
-                <span className={`nc-dot${en.hasNote ? ' on' : ''}`} title={en.hasNote ? 'com nota' : 'sem nota'} />
-              </div>
-              <div className="nc-title">{en.title}</div>
-              <div className="nc-sub">{en.subtitle}</div>
-              <div className="nc-preview">{en.hasNote ? en.preview : 'Escrever nota…'}</div>
-            </button>
-          ))}
-          {!filtered.length && (
+        <div className="notes-columns">
+          <div className="notes-col">
+            <div className="notes-col-head">
+              <span>📋 Plano Semanal</span>
+              <span className="notes-col-count">{weekNotes.filter((e) => e.hasNote).length}/{weekNotes.length}</span>
+            </div>
+            <div className="notes-col-list">
+              {weekNotes.length ? weekNotes.map((en) => (
+                <NoteCard key={`w-${en.id}`} entry={en} onOpen={() => setSel({ type: 'week', id: en.id as number })} />
+              )) : <div className="notes-col-empty">Sem plano importado</div>}
+            </div>
+          </div>
+          <div className="notes-col">
+            <div className="notes-col-head">
+              <span>⚔️ Desafios</span>
+              <span className="notes-col-count">{challengeNotes.filter((e) => e.hasNote).length}/{challengeNotes.length}</span>
+            </div>
+            <div className="notes-col-list">
+              {challengeNotes.length ? challengeNotes.map((en) => (
+                <NoteCard key={`c-${en.id}`} entry={en} onOpen={() => setSel({ type: 'challenge', id: en.id as string })} />
+              )) : <div className="notes-col-empty">Sem desafios importados</div>}
+            </div>
+          </div>
+          {entries.length > 0 && !filtered.length && (
             <EmptyNotice title="Nada encontrado">Nenhuma nota bate com “{query}”.</EmptyNotice>
           )}
         </div>
