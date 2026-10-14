@@ -176,7 +176,8 @@ export const NotesPage: React.FC<{ selectedWeekId?: number | null; onConsumed?: 
 
       {sel && (selWeek || selChallenge) && (
         <NotebookEditor
-          title={selWeek ? `Semana ${selWeek.id} — ${selWeek.title}` : `Desafio ${String(selChallenge!.num).padStart(2, '0')} — ${selChallenge!.title}`}
+          mark={selWeek ? `Semana ${selWeek.id}` : `Desafio ${String(selChallenge!.num).padStart(2, '0')}`}
+          title={selWeek ? selWeek.title : selChallenge!.title}
           subtitle={selWeek ? selWeek.days : (selChallenge!.trains || []).join(', ')}
           initial={initialText()}
           onSave={save}

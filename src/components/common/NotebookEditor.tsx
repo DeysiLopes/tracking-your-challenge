@@ -10,13 +10,15 @@ import { renderMarkdown, mdFileName, downloadMarkdown } from '../../core/busines
 interface Props {
   title: string;
   subtitle?: string;
+  /** rótulo superior estilo folha de citações (ex.: "Semana 3") */
+  mark?: string;
   initial: string;
   onSave: (text: string) => void;
   onClear?: () => void;
   onClose: () => void;
 }
 
-export const NotebookEditor: React.FC<Props> = ({ title, subtitle, initial, onSave, onClear, onClose }) => {
+export const NotebookEditor: React.FC<Props> = ({ title, subtitle, mark, initial, onSave, onClear, onClose }) => {
   const [draft, setDraft] = useState(initial);
   const [reading, setReading] = useState(false);
   const [dirty, setDirty] = useState(false);
@@ -42,6 +44,7 @@ export const NotebookEditor: React.FC<Props> = ({ title, subtitle, initial, onSa
       <div className="notebook">
         <header className="nb-head">
           <div className="nb-title-wrap">
+            {mark && <div className="nb-mark">📝 {mark}</div>}
             <h3 className="nb-title">{title}</h3>
             {subtitle && <p className="nb-sub">{subtitle}</p>}
           </div>
