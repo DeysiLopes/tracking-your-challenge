@@ -181,7 +181,12 @@ body {
   padding: 8px 12px 20px;
   border-bottom: 1px solid var(--border);
   margin-bottom: 8px;
+  text-decoration: none;
+  color: inherit;
+  border-radius: var(--radius-sm);
+  transition: background var(--transition);
 }
+.sidebar-logo:hover { background: var(--bg-hover); }
 /* botão de recolher a sidebar (fica só com ícones) */
 .sidebar-toggle {
   position: absolute; top: 10px; right: 10px; z-index: 2;
@@ -192,17 +197,29 @@ body {
 }
 .sidebar-toggle:hover { color: var(--indigo-light); border-color: var(--indigo); }
 
-/* sidebar colapsada (desktop): só ícones, coluna estreita */
+/* sidebar colapsada (desktop): só ícones, coluna estreita e harmônica */
 @media (min-width: 769px) {
-  .sidebar.collapsed { width: 72px; min-width: 72px; align-items: center; padding: 24px 8px; }
-  .sidebar.collapsed .sidebar-logo { border-bottom: none; padding: 8px 0 14px; justify-content: center; margin-bottom: 0; }
+  .sidebar.collapsed { width: 72px; min-width: 72px; align-items: center; padding: 24px 8px; gap: 10px; }
+  .sidebar.collapsed .sidebar-logo { border-bottom: none; padding: 0; justify-content: center; margin-bottom: 0; }
   .sidebar.collapsed .mascot-name,
   .sidebar.collapsed .mascot-bubble,
   .sidebar.collapsed .day-counter .day-label { display: none; }
+  /* todos os "ícones" na mesma caixa 40×40 */
+  .sidebar.collapsed .nav-item,
+  .sidebar.collapsed .settings-btn {
+    width: 40px; height: 40px; padding: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
   .sidebar.collapsed .sidebar-nav { align-items: center; }
-  .sidebar.collapsed .sidebar-footer { align-items: center; }
-  .sidebar.collapsed .nav-item { justify-content: center; padding: 10px; width: auto; }
-  .sidebar.collapsed .settings-btn { justify-content: center; width: auto; }
+  .sidebar.collapsed .sidebar-footer { align-items: center; gap: 8px; }
+  /* mascote encolhe pro mesmo tamanho dos ícones */
+  .sidebar.collapsed .mascot-box { padding: 4px; margin: 0; }
+  .sidebar.collapsed .mascot-cat { width: 36px; }
+  .sidebar.collapsed .mascot-cat svg { width: 36px; height: auto; }
+  /* contador vira um ícone compacto */
+  .sidebar.collapsed .day-counter { padding: 6px 4px; flex-direction: column; gap: 0; }
+  .sidebar.collapsed .day-number { font-size: 15px; }
   .sidebar.collapsed .sidebar-toggle { top: 6px; right: 6px; }
 }
 /* colapsada em qualquer tamanho: labels somem, ficam só os ícones */
@@ -212,8 +229,6 @@ body {
 .sidebar.collapsed .sb-label { display: none; }
 
 .logo-icon { width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; filter: drop-shadow(0 0 12px var(--indigo-glow-xl)); }
-.logo-cat-btn { background: transparent; border: none; cursor: pointer; padding: 0; border-radius: var(--radius-sm); transition: transform var(--transition); }
-.logo-cat-btn:hover { transform: scale(1.12); }
 .logo-icon .cat-svg, .logo-icon svg { width: 28px; height: 28px; }
 .logo-text { display: flex; flex-direction: column; }
 .logo-title { font-weight: 800; font-size: 15px; color: var(--text-primary); letter-spacing: -0.3px; }

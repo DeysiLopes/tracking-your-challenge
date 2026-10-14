@@ -8,7 +8,6 @@ import { useTracker } from '../../hooks/useTracker';
 import { PixelCat } from './PixelCat';
 import { MascotBox } from './MascotBox';
 import { getCurrentDay, getEarnedXP, hasPlanContent } from '../../core/business/progress';
-import { catName } from '../../core/business/cats';
 
 interface Props {
   onOpenConfig: () => void;
@@ -24,7 +23,7 @@ const NAV_ITEMS = [
 const COLLAPSED_KEY = 'tracker-sidebar-collapsed';
 
 export const Sidebar: React.FC<Props> = ({ onOpenConfig }) => {
-  const { ctx, plan, mascot, driveStatus, connectDrive, disconnectDrive, toast, showOffCat } = useTracker();
+  const { ctx, plan, mascot, driveStatus, connectDrive, disconnectDrive, toast } = useTracker();
   const [driveBusy, setDriveBusy] = useState(false);
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem(COLLAPSED_KEY) === '1');
 
@@ -67,20 +66,15 @@ export const Sidebar: React.FC<Props> = ({ onOpenConfig }) => {
       >
         {collapsed ? '»' : '«'}
       </button>
-      <div className="sidebar-logo">
-        <button
-          className="logo-icon logo-cat-btn"
-          id="logo-icon"
-          title={`${catName(mascot.level)} — clique pra ver o gato se exibir 🐾`}
-          onClick={() => showOffCat()}
-        >
+      <NavLink to="/" className="sidebar-logo" title="Voltar pro Dashboard" end>
+        <div className="logo-icon" id="logo-icon">
           <PixelCat level={mascot.level} size={32} className={`logo-cat cat-tier-${mascot.level}`} />
-        </button>
+        </div>
         <div className="logo-text">
           <span className="logo-title" id="plan-name">{planName}</span>
           <span className="logo-sub" id="plan-sub">{planSub}</span>
         </div>
-      </div>
+      </NavLink>
 
       <nav className="sidebar-nav">
         {NAV_ITEMS.map((item) => (

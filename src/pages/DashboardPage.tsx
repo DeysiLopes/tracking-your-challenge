@@ -121,13 +121,14 @@ export const DashboardPage: React.FC = () => {
           {challengeBadges.length ? (
             <div className="challenge-badges-grid">
               {challengeBadges.map((b) => (
-                <div key={b.challengeId} className="challenge-badge-card">
-                  <div
-                    className="challenge-badge-cat cat-clickable"
-                    role="button"
-                    title={`${catName(b.skin)} — clique pra ver o gato se exibir 🐾`}
-                    onClick={() => showOffCat(b.skin)}
-                  >
+                <div
+                  key={b.challengeId}
+                  className="challenge-badge-card cat-clickable"
+                  role="button"
+                  title={`${catName(b.skin)} — clique pra ver o gato se exibir 🐾`}
+                  onClick={() => showOffCat(b.skin)}
+                >
+                  <div className="challenge-badge-cat">
                     <PixelCat level={b.skin} size={48} className={`cat-tier-${b.skin}`} />
                   </div>
                   <div className="challenge-badge-info">
